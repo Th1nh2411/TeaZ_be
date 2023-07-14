@@ -1,93 +1,103 @@
-const { Shop, Ingredient, Type, Recipe_shop, Recipe, Recipe_type, Recipe_ingredient, Invoice, Staff, Account, Import, Export, Ingredient_shop, Revenue_statistic } = require("../models");
-const { QueryTypes, Op, where, STRING, NUMBER } = require("sequelize");
-const db = require("../models/index");
-const bcrypt = require("bcryptjs");
+const {
+    Shop,
+    Ingredient,
+    Type,
+    Recipe_shop,
+    Recipe,
+    Recipe_type,
+    Recipe_ingredient,
+    Invoice,
+    Staff,
+    Account,
+    Import,
+    Export,
+    Ingredient_shop,
+} = require('../models');
+const { QueryTypes, Op, where, STRING, NUMBER } = require('sequelize');
+const db = require('../models/index');
+const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone'); // require
-const { getDetailCart } = require("./order.controllers");
-const { raw } = require("body-parser");
+const { getDetailCart } = require('./order.controllers');
+const { raw } = require('body-parser');
 
 const deleteStaffWithTransaction = async (account, staff) => {
     //console.log('test1')
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
 
-    let isSuccess
+    let isSuccess;
     try {
         //console.log('test2')
 
         await staff.destroy({ transaction: t });
         await account.destroy({ transaction: t });
 
-
-
-
-
         await t.commit(); // Lưu thay đổi và kết thúc transaction
-        isSuccess = true
+        isSuccess = true;
     } catch (error) {
-        isSuccess = false
+        isSuccess = false;
         await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction
-
     }
 
-    return isSuccess
-}
+    return isSuccess;
+};
 
 const createManagerWithTransaction = async (phone, password, name, idShop) => {
     //console.log('test1')
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
 
-    let isSuccess
+    let isSuccess;
     try {
         //console.log('test2')
         const salt = bcrypt.genSaltSync(10);
         const hashPassword = bcrypt.hashSync(password, salt);
         //console.log('test3')
-        const newAccount = await Account.create({
-            phone,
-            role: 2,
-            password: hashPassword,
-
-        }, { transaction: t });
+        const newAccount = await Account.create(
+            {
+                phone,
+                role: 2,
+                password: hashPassword,
+            },
+            { transaction: t },
+        );
         //console.log('test4')
-        const newStaff = await Staff.create({
-            idAcc: newAccount.idAcc,
-            name,
-            idShop,
-            isShare: 1,
-
-        }, { transaction: t });
+        const newStaff = await Staff.create(
+            {
+                idAcc: newAccount.idAcc,
+                name,
+                idShop,
+                isShare: 1,
+            },
+            { transaction: t },
+        );
 
         //console.log('test5')
         //console.log('test3')
 
-
         await t.commit(); // Lưu thay đổi và kết thúc transaction
-        isSuccess = true
+        isSuccess = true;
     } catch (error) {
-        isSuccess = false
+        isSuccess = false;
         await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction
-
     }
 
-    return isSuccess
-}
+    return isSuccess;
+};
 
 const getTotal = (listInvoices) => {
-    let total = 0
+    let total = 0;
     //let total =0
 
     listInvoices.forEach((invoice) => {
-        total += invoice.total
-        console.log(invoice.total)
+        total += invoice.total;
+        console.log(invoice.total);
     });
 
-    return total
-}
+    return total;
+};
 const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
-    let listTotalAndTotalAmountImpot = []
+    let listTotalAndTotalAmountImpot = [];
 
     for (var i = 0; i < dateRangeArray.length; i++) {
-
         // Lấy đối tượng dateRange tại vị trí i
         var dateRange = dateRangeArray[i];
 
@@ -97,58 +107,51 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
         var month = dateRange.month;
         let invoices = await Invoice.findAll({
             where: {
-
                 date: {
                     [Op.gte]: startDate,
-                    [Op.lt]: endDate
+                    [Op.lt]: endDate,
                 },
                 status: {
-                    [Op.ne]: 0
-                }
-
+                    [Op.ne]: 0,
+                },
             },
             attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
-        })
-        let total = 0
-        const promises = invoices.map(async item => {
-
-            let detail = await getDetailCart(item['idCart'])
-            total += item['total']
+        });
+        let total = 0;
+        const promises = invoices.map(async (item) => {
+            let detail = await getDetailCart(item['idCart']);
+            total += item['total'];
             return {
-
                 idInvoices: item['idInvoice'],
                 date: item['date'],
 
                 detail,
-
             };
         });
 
         invoices = await Promise.all(promises);
-        let countInvoices = 0
-        countInvoices = invoices.length
+        let countInvoices = 0;
+        countInvoices = invoices.length;
         // In ra các giá trị
-        let { totalAmountImport } = await getChangeIngredientShopInfoAllShop(startDate, endDate, 0)
+        let { totalAmountImport } = await getChangeIngredientShopInfoAllShop(startDate, endDate, 0);
 
         var totalAndTotalAmountImport = {
             month: month,
             total: total,
             countInvoices: countInvoices,
-            totalAmountImport: totalAmountImport
+            totalAmountImport: totalAmountImport,
         };
         listTotalAndTotalAmountImpot.push(totalAndTotalAmountImport);
-
     }
-    return listTotalAndTotalAmountImpot
-}
+    return listTotalAndTotalAmountImpot;
+};
 const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
-    let listTotalAndTotalAmountImpot = []
+    let listTotalAndTotalAmountImpot = [];
 
     for (var i = 0; i < dateRangeArray.length; i++) {
-
         // Lấy đối tượng dateRange tại vị trí i
         var dateRange = dateRangeArray[i];
 
@@ -161,67 +164,60 @@ const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
                 idShop: idShop,
                 date: {
                     [Op.gte]: startDate,
-                    [Op.lt]: endDate
+                    [Op.lt]: endDate,
                 },
                 status: {
-                    [Op.ne]: 0
-                }
-
+                    [Op.ne]: 0,
+                },
             },
             attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
-        })
-        let total = 0
-        const promises = invoices.map(async item => {
-
-            let detail = await getDetailCart(item['idCart'])
-            total += item['total']
+        });
+        let total = 0;
+        const promises = invoices.map(async (item) => {
+            let detail = await getDetailCart(item['idCart']);
+            total += item['total'];
             return {
-
                 idInvoices: item['idInvoice'],
                 date: item['date'],
 
                 detail,
-
             };
         });
 
         invoices = await Promise.all(promises);
-        let countInvoices = 0
-        countInvoices = invoices.length
+        let countInvoices = 0;
+        countInvoices = invoices.length;
         // In ra các giá trị
-        let { totalAmountImport } = await getChangeIngredientShopInfo(idShop, startDate, endDate, 0)
+        let { totalAmountImport } = await getChangeIngredientShopInfo(idShop, startDate, endDate, 0);
 
         var totalAndTotalAmountImport = {
             month: month,
             total: total,
             countInvoices: countInvoices,
-            totalAmountImport: totalAmountImport
+            totalAmountImport: totalAmountImport,
         };
         listTotalAndTotalAmountImpot.push(totalAndTotalAmountImport);
-
     }
-    return listTotalAndTotalAmountImpot
-}
+    return listTotalAndTotalAmountImpot;
+};
 const getChangeIngredientShopInfoAllShop = async (startDate, endDate, type) => {
     let imports = await Import.findAll({
         where: {
-
             date: {
                 [Op.gte]: startDate,
-                [Op.lt]: endDate
+                [Op.lt]: endDate,
             },
         },
         attributes: ['idImport', 'idIngredient', 'date', 'price', 'quantity'],
 
         raw: true,
-    })
+    });
     let totalAmountImport = 0;
 
-
-    imports.forEach(importItem => {
+    imports.forEach((importItem) => {
         const price = importItem.price;
         const quantity = importItem.quantity;
 
@@ -234,42 +230,40 @@ const getChangeIngredientShopInfoAllShop = async (startDate, endDate, type) => {
                 idShop: idShop,
                 date: {
                     [Op.gte]: startDate,
-                    [Op.lt]: endDate
+                    [Op.lt]: endDate,
                 },
             },
             attributes: ['idExport', 'idIngredient', 'date', 'info', 'quantity'],
 
             raw: true,
-        })
-        let exportsWithoutBH = exports.filter(exportItem => !exportItem.info.startsWith('BH'));
-        let exportsBH = exports.filter(exportItem => exportItem.info.startsWith('BH'));
-        exportsBH = await getDetailChangeIngredient(exportsBH, 1)
-        exportsWithoutBH = await getDetailChangeIngredient(exportsWithoutBH, 1)
-        imports = await getDetailChangeIngredient(imports, 0)
+        });
+        let exportsWithoutBH = exports.filter((exportItem) => !exportItem.info.startsWith('BH'));
+        let exportsBH = exports.filter((exportItem) => exportItem.info.startsWith('BH'));
+        exportsBH = await getDetailChangeIngredient(exportsBH, 1);
+        exportsWithoutBH = await getDetailChangeIngredient(exportsWithoutBH, 1);
+        imports = await getDetailChangeIngredient(imports, 0);
         //console.log(exports)
 
         //console.log(imports, totalAmoutImport, exports, filteredExports)
-        return { imports, totalAmountImport, exportsBH, exportsWithoutBH }
-    } else return { totalAmountImport }
-
-}
+        return { imports, totalAmountImport, exportsBH, exportsWithoutBH };
+    } else return { totalAmountImport };
+};
 const getChangeIngredientShopInfo = async (idShop, startDate, endDate, type) => {
     let imports = await Import.findAll({
         where: {
             idShop: idShop,
             date: {
                 [Op.gte]: startDate,
-                [Op.lt]: endDate
+                [Op.lt]: endDate,
             },
         },
         attributes: ['idImport', 'idIngredient', 'date', 'price', 'quantity'],
 
         raw: true,
-    })
+    });
     let totalAmountImport = 0;
 
-
-    imports.forEach(importItem => {
+    imports.forEach((importItem) => {
         const price = importItem.price;
         const quantity = importItem.quantity;
 
@@ -282,32 +276,31 @@ const getChangeIngredientShopInfo = async (idShop, startDate, endDate, type) => 
                 idShop: idShop,
                 date: {
                     [Op.gte]: startDate,
-                    [Op.lt]: endDate
+                    [Op.lt]: endDate,
                 },
             },
             attributes: ['idExport', 'idIngredient', 'date', 'info', 'quantity'],
 
             raw: true,
-        })
-        let exportsWithoutBH = exports.filter(exportItem => !exportItem.info.startsWith('BH'));
-        let exportsBH = exports.filter(exportItem => exportItem.info.startsWith('BH'));
-        exportsBH = await getDetailChangeIngredient(exportsBH, 1)
-        exportsWithoutBH = await getDetailChangeIngredient(exportsWithoutBH, 1)
-        imports = await getDetailChangeIngredient(imports, 0)
+        });
+        let exportsWithoutBH = exports.filter((exportItem) => !exportItem.info.startsWith('BH'));
+        let exportsBH = exports.filter((exportItem) => exportItem.info.startsWith('BH'));
+        exportsBH = await getDetailChangeIngredient(exportsBH, 1);
+        exportsWithoutBH = await getDetailChangeIngredient(exportsWithoutBH, 1);
+        imports = await getDetailChangeIngredient(imports, 0);
         //console.log(exports)
 
         //console.log(imports, totalAmoutImport, exports, filteredExports)
-        return { imports, totalAmountImport, exportsBH, exportsWithoutBH }
-    } else return { totalAmountImport }
-
-}
+        return { imports, totalAmountImport, exportsBH, exportsWithoutBH };
+    } else return { totalAmountImport };
+};
 
 const getDetailChangeIngredient = async (list, type) => {
     let ingredientQuantityMap = {};
     let ingredientDetailsList = [];
     if (type == 1) {
         //console.log('test1')
-        list.forEach(item => {
+        list.forEach((item) => {
             const ingredientId = item.idIngredient;
             const quantity = item.quantity;
 
@@ -316,7 +309,6 @@ const getDetailChangeIngredient = async (list, type) => {
             } else {
                 ingredientQuantityMap[ingredientId] = {
                     quantity: quantity,
-
                 };
             }
         });
@@ -340,15 +332,12 @@ const getDetailChangeIngredient = async (list, type) => {
 
         await processIngredientDetails();
         //console.log(ingredientDetailsList)
-    }
-
-
-    else {
+    } else {
         //console.log('test2')
-        list.forEach(item => {
+        list.forEach((item) => {
             const ingredientId = item.idIngredient;
             const quantity = item.quantity;
-            const price = item.price
+            const price = item.price;
             if (ingredientQuantityMap.hasOwnProperty(ingredientId)) {
                 ingredientQuantityMap[ingredientId].quantity += quantity;
                 ingredientQuantityMap[ingredientId].total += Number(quantity * price);
@@ -368,7 +357,7 @@ const getDetailChangeIngredient = async (list, type) => {
                 });
 
                 ingredient.quantity = ingredientData.quantity;
-                ingredient.total = ingredientData.total
+                ingredient.total = ingredientData.total;
                 ingredientDetailsList.push(ingredient);
 
                 //console.log('2');
@@ -380,23 +369,23 @@ const getDetailChangeIngredient = async (list, type) => {
         await processIngredientDetails();
     }
 
-    return ingredientDetailsList
-}
+    return ingredientDetailsList;
+};
 
 const getTopSellerByInvoices = (listInvoices, quantity) => {
     const nameCounts = {};
-    let countProducts = 0
-    let countProductWithTopping = 0
-    let countToppings = 0
+    let countProducts = 0;
+    let countProductWithTopping = 0;
+    let countToppings = 0;
     //let total =0
     const toppingCounts = {};
     listInvoices.forEach((invoice) => {
         invoice.detail.forEach((recipe) => {
             const name = recipe.name;
             const idRecipe = recipe.idRecipe;
-            const quantityProduct = recipe.quantityProduct
-            const image = recipe.image
-            countProducts += quantityProduct
+            const quantityProduct = recipe.quantityProduct;
+            const image = recipe.image;
+            countProducts += quantityProduct;
             if (nameCounts[name]) {
                 nameCounts[name].count += quantityProduct;
             } else {
@@ -407,24 +396,24 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
                 };
             }
             if (recipe.listTopping != '') {
-                countProductWithTopping += quantityProduct
+                countProductWithTopping += quantityProduct;
             }
             recipe.listTopping.forEach((item) => {
                 const nameTopping = item.name;
                 const idItem = item.idRecipe;
-                const quantity = item.quantity * quantityProduct
-                const imageTopping = item.image
-                countToppings += quantity
+                const quantity = item.quantity * quantityProduct;
+                const imageTopping = item.image;
+                countToppings += quantity;
                 if (toppingCounts[nameTopping]) {
                     toppingCounts[nameTopping].count += quantity;
                 } else {
                     toppingCounts[nameTopping] = {
                         count: quantity,
                         idRecipes: idItem,
-                        image: imageTopping
+                        image: imageTopping,
                     };
                 }
-            })
+            });
         });
     });
     //console.log(countToppings)
@@ -446,15 +435,13 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
         count: toppingCounts[name].count,
     }));
 
-    return { topNames, topToppings, countProducts, countToppings, countProductWithTopping }
-}
-
-
+    return { topNames, topToppings, countProducts, countToppings, countProductWithTopping };
+};
 
 const getSixMonthInputAndOuput = async (req, res) => {
     try {
         //const staff = req.staff
-        const { idShop } = req.params
+        const { idShop } = req.params;
         var currentDate = moment();
 
         var dateRangeArray = [];
@@ -466,15 +453,14 @@ const getSixMonthInputAndOuput = async (req, res) => {
             var dateRange = {
                 month: month + 1,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
             };
             dateRangeArray.push(dateRange);
         }
         // Lặp qua mảng dateRangeArray
-        let listTotalAndTotalAmountImport = await getTotalAndTotalImport(dateRangeArray, idShop)
+        let listTotalAndTotalAmountImport = await getTotalAndTotalImport(dateRangeArray, idShop);
 
         //console.log(dateRangeArray);
-
 
         // let { imports, totalAmountImport, exportsBH, exportsWithoutBH } = await getChangeIngredientShopInfo(staff.idShop, startDate, endDate, 1)
 
@@ -498,15 +484,14 @@ const getSixMonthInputAndOuputAllShop = async (req, res) => {
             var dateRange = {
                 month: month + 1,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
             };
             dateRangeArray.push(dateRange);
         }
         // Lặp qua mảng dateRangeArray
-        let listTotalAndTotalAmountImport = await getTotalAndTotalImportAllShop(dateRangeArray)
+        let listTotalAndTotalAmountImport = await getTotalAndTotalImportAllShop(dateRangeArray);
 
         //console.log(dateRangeArray);
-
 
         // let { imports, totalAmountImport, exportsBH, exportsWithoutBH } = await getChangeIngredientShopInfo(staff.idShop, startDate, endDate, 1)
 
@@ -517,8 +502,6 @@ const getSixMonthInputAndOuputAllShop = async (req, res) => {
 };
 const getListManager = async (req, res) => {
     try {
-
-
         let listStaffs = await Account.findAll({
             where: { [Op.or]: [{ role: 2 }, { role: 3 }] },
             attributes: ['idAcc', 'phone', 'role'],
@@ -527,21 +510,19 @@ const getListManager = async (req, res) => {
                     model: Staff,
                     attributes: ['idStaff', 'idShop', 'name'],
                     required: true,
-                }
+                },
             ],
             raw: true,
+        });
 
-        })
-
-        listStaffs = listStaffs.map(item => {
-
+        listStaffs = listStaffs.map((item) => {
             return {
                 idStaff: item['Staff.idStaff'],
                 name: item['Staff.name'],
                 idShop: item['Staff.idShop'],
                 phone: item['phone'],
                 role: item['role'],
-            }
+            };
         });
         return res.status(200).json({ isSuccess: true, listStaffs });
     } catch (error) {
@@ -550,15 +531,11 @@ const getListManager = async (req, res) => {
 };
 const getListShop = async (req, res) => {
     try {
-
-
         let listShops = await Shop.findAll({
-
             attributes: ['idShop', 'address', 'image', 'isActive', 'latitude', 'longitude'],
 
             //raw: true,
-
-        })
+        });
 
         // listStaffs = listStaffs.map(item => {
 
@@ -577,76 +554,68 @@ const getListShop = async (req, res) => {
 };
 const deleteManager = async (req, res) => {
     try {
-        const staff = req.staff
-        const account = req.account
+        const staff = req.staff;
+        const account = req.account;
 
         if (account.role === 2) {
             let infoStaff = await Staff.findOne({
-                where: { idAcc: account.idAcc }
-            })
+                where: { idAcc: account.idAcc },
+            });
 
-            let isSuccess = await deleteStaffWithTransaction(account, infoStaff)
+            let isSuccess = await deleteStaffWithTransaction(account, infoStaff);
 
             return res.status(200).json({ isSuccess });
-        }
-        else return res.status(403).json({ message: "Bạn không có quyền sử dụng chức năng này!" });
-
+        } else return res.status(403).json({ message: 'Bạn không có quyền sử dụng chức năng này!' });
     } catch (error) {
         res.status(500).json({ error, mes: 'editStaff' });
     }
 };
 const editIngredient = async (req, res) => {
     try {
-        let ingredient = req.ingredient
+        let ingredient = req.ingredient;
         const { name, unitName, image, isDel } = req.body;
-
-
 
         if (name) {
             ingredient.name = name;
         }
         if (unitName) {
-            ingredient.unitName = unitName
+            ingredient.unitName = unitName;
         }
         if (image) {
             ingredient.image = image;
         }
         if (isDel) {
             if (Number(isDel) == 1) {
-                ingredient.isDel = 1
-            }
-            else {
-                ingredient.isDel = 0
+                ingredient.isDel = 1;
+            } else {
+                ingredient.isDel = 0;
             }
         }
-        await ingredient.save()
+        await ingredient.save();
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'editManager' });
     }
 };
 const editManager = async (req, res) => {
     try {
-        const staff = req.staff
-        const { idStaff } = req.params
+        const staff = req.staff;
+        const { idStaff } = req.params;
         const { phone, name, password, idShop } = req.body;
 
         let infoStaff = await Staff.findOne({
             where: { idStaff: idStaff },
-
-        })
-        if (!infoStaff) return res.status(409).send({ isSuccess: false, mes: 'Nhân viên không tồn tại' })
+        });
+        if (!infoStaff) return res.status(409).send({ isSuccess: false, mes: 'Nhân viên không tồn tại' });
         let account = await Account.findOne({
-            where: { idAcc: infoStaff.idAcc }
-        })
-        if (!account) return res.status(409).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' })
+            where: { idAcc: infoStaff.idAcc },
+        });
+        if (!account) return res.status(409).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
         if (phone) {
             account.phone = phone;
         }
         if (idShop) {
-            infoStaff.idShop = idShop
+            infoStaff.idShop = idShop;
         }
         if (name) {
             infoStaff.name = name;
@@ -654,51 +623,46 @@ const editManager = async (req, res) => {
         if (password) {
             const salt = bcrypt.genSaltSync(10);
             const hashPassword = bcrypt.hashSync(password, salt);
-            account.password = hashPassword
+            account.password = hashPassword;
         }
-        await account.save()
-        await infoStaff.save()
+        await account.save();
+        await infoStaff.save();
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'editManager' });
     }
 };
 const editShop = async (req, res) => {
     try {
-        const staff = req.staff
-        const { idShop } = req.params
+        const staff = req.staff;
+        const { idShop } = req.params;
         const { address, image, latitude, longitude, isActive } = req.body;
 
         let infoShop = await Shop.findOne({
             where: { idShop: idShop },
-
-        })
+        });
         //console.log(1)
-        if (!infoShop) return res.status(409).send({ isSuccess: false, mes: 'Shop không tồn tại' });;
+        if (!infoShop) return res.status(409).send({ isSuccess: false, mes: 'Shop không tồn tại' });
         if (image) {
             infoShop.image = image;
         }
         if (isActive) {
             if (Number(isActive) != 1) {
                 infoShop.isActive = 0;
-            }
-            else {
-                infoShop.isActive = 1
+            } else {
+                infoShop.isActive = 1;
             }
         }
         if (latitude && longitude && address) {
-            if (isNaN(latitude) || isNaN(longitude)) return res.status(400).json({ isSuccess: false, mes: 'Một trong hai lati hoặc longi không phải số' });
-            infoShop.latitude = Number(latitude)
-            infoShop.longitude = Number(longitude)
+            if (isNaN(latitude) || isNaN(longitude))
+                return res.status(400).json({ isSuccess: false, mes: 'Một trong hai lati hoặc longi không phải số' });
+            infoShop.latitude = Number(latitude);
+            infoShop.longitude = Number(longitude);
             infoShop.address = address;
         }
 
-        await infoShop.save()
+        await infoShop.save();
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'editShop' });
     }
@@ -706,7 +670,7 @@ const editShop = async (req, res) => {
 
 const addManager = async (req, res) => {
     try {
-        const staff = req.staff
+        const staff = req.staff;
         const { phone, password, name, idShop } = req.body;
         if (phone === '' || password === '' || name === '' || idShop === '') {
             return res.status(400).json({ isSuccess: false, mes: 'addManager1' });
@@ -714,8 +678,7 @@ const addManager = async (req, res) => {
         if (isNaN(phone) || isNaN(idShop) || password === undefined || name === undefined) {
             return res.status(400).json({ isSuccess: false, mes: 'addManager2' });
         }
-        let isSuccess = await createManagerWithTransaction(phone, password, name, idShop)
-
+        let isSuccess = await createManagerWithTransaction(phone, password, name, idShop);
 
         return res.status(200).json({ isSuccess });
     } catch (error) {
@@ -724,7 +687,6 @@ const addManager = async (req, res) => {
 };
 const addShop = async (req, res) => {
     try {
-
         let { address, image, latitude, longitude, isActive } = req.body;
 
         if (latitude === '' || longitude === '' || address === '' || image === '' || isActive === '') {
@@ -734,10 +696,9 @@ const addShop = async (req, res) => {
             return res.status(400).json({ isSuccess: false, mes: 'addShop2' });
         }
         if (Number(isActive) == 1) {
-            isActive = 1
-        }
-        else {
-            isActive = 0
+            isActive = 1;
+        } else {
+            isActive = 0;
         }
 
         const newShop = await Shop.create({
@@ -746,9 +707,7 @@ const addShop = async (req, res) => {
             latitude,
             isActive,
             image,
-
         });
-
 
         return res.status(200).json({ isSuccess: true, newShop });
     } catch (error) {
@@ -757,9 +716,7 @@ const addShop = async (req, res) => {
 };
 const getListIngredient = async (req, res) => {
     try {
-        const listIngredient = await Ingredient.findAll({
-
-        })
+        const listIngredient = await Ingredient.findAll({});
 
         return res.status(200).json({ isSuccess: true, listIngredient });
     } catch (error) {
@@ -779,7 +736,6 @@ const addIngredient = async (req, res) => {
             name,
             image,
             unitName,
-
         });
 
         return res.status(200).json({ isSuccess: true });
@@ -797,7 +753,6 @@ const addRecipe = async (req, res) => {
             info,
             price,
             idType,
-
         });
 
         return res.status(200).json({ isSuccess: true });
@@ -807,14 +762,11 @@ const addRecipe = async (req, res) => {
 };
 const editRecipe = async (req, res) => {
     try {
-
         const { image, info, name, price, idType, isDel } = req.body;
-        const { idRecipe } = req.params
+        const { idRecipe } = req.params;
         let infoRecipe = await Recipe.findOne({
             where: { idRecipe: idRecipe },
-
-        })
-
+        });
 
         if (name) {
             infoRecipe.name = name;
@@ -828,130 +780,105 @@ const editRecipe = async (req, res) => {
         if (idType) {
             const type = await Type.findOne({
                 where: {
-                    idType: idType
-                }
-            })
+                    idType: idType,
+                },
+            });
             if (!type) return res.status(400).json({ isSuccess: false, mes: 'Không tồn tại idType này' });
-            infoRecipe.idType = idType
-
+            infoRecipe.idType = idType;
         }
         if (price) {
             infoRecipe.price = price;
         }
         if (isDel) {
             if (Number(isDel) == 1) {
-                infoRecipe.isDel = 1
-            }
-            else {
-                infoRecipe.isDel = 0
+                infoRecipe.isDel = 1;
+            } else {
+                infoRecipe.isDel = 0;
             }
         }
-        await infoRecipe.save()
+        await infoRecipe.save();
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'editManager' });
     }
 };
 const editRecipeIngredient = async (req, res) => {
     try {
-
         const { quantity } = req.body;
 
-        const recipe = req.recipe
-        const ingredient = req.ingredient
+        const recipe = req.recipe;
+        const ingredient = req.ingredient;
         let [recipe_ingredient, created] = await Recipe_ingredient.findOrCreate({
             where: {
                 idRecipe: recipe.idRecipe,
-                idIngredient: ingredient.idIngredient
-            }
+                idIngredient: ingredient.idIngredient,
+            },
         });
-        if (isNaN(quantity)) return res.status(400).json({ isSuccess: false, mes: 'quantity phải là số và lớn hơn bằng 0' });
-        if (Number(quantity) < 0) return res.status(400).json({ isSuccess: false, mes: 'quantity phải là số và lớn hơn bằng 0' });
+        if (isNaN(quantity))
+            return res.status(400).json({ isSuccess: false, mes: 'quantity phải là số và lớn hơn bằng 0' });
+        if (Number(quantity) < 0)
+            return res.status(400).json({ isSuccess: false, mes: 'quantity phải là số và lớn hơn bằng 0' });
         if (Number(quantity) == 0) {
-            await recipe_ingredient.destroy()
+            await recipe_ingredient.destroy();
             return res.status(200).json({ isSuccess: true });
         }
-        recipe_ingredient.quantity = quantity
-        await recipe_ingredient.save()
+        recipe_ingredient.quantity = quantity;
+        await recipe_ingredient.save();
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'editManager' });
     }
 };
 const addRecipeType = async (req, res) => {
     try {
+        const recipe = req.recipe;
+        const type = req.type;
 
-
-
-        const recipe = req.recipe
-        const type = req.type
-        
         let recipe_type = await Recipe_type.findOrCreate({
-            where:{
+            where: {
                 idRecipe: recipe.idRecipe,
-                idType: type.idType
-            }
-          
+                idType: type.idType,
+            },
         });
-        if(!recipe_type) return res.status(400).json({ isSuccess: true });
+        if (!recipe_type) return res.status(400).json({ isSuccess: true });
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'addRecipeType' });
     }
 };
 const deleteRecipeType = async (req, res) => {
     try {
+        const recipe = req.recipe;
+        const type = req.type;
 
-
-
-        const recipe = req.recipe
-        const type = req.type
-        
         let recipe_type = await Recipe_type.findOne({
-            where:{
+            where: {
                 idRecipe: recipe.idRecipe,
-                idType: type.idType
-            }
-          
+                idType: type.idType,
+            },
         });
-        if(!recipe_type) return res.status(404).json({ isSuccess: true, mes:'Không tồn tại liên kết recipe_type này' });
-        await recipe_type.destroy()
+        if (!recipe_type)
+            return res.status(404).json({ isSuccess: true, mes: 'Không tồn tại liên kết recipe_type này' });
+        await recipe_type.destroy();
         return res.status(200).json({ isSuccess: true });
-
-
     } catch (error) {
         res.status(500).json({ error, mes: 'addRecipeType' });
     }
 };
 const getListRecipeAdmin = async (req, res) => {
     try {
-
-
-        let listType = []
-        let listRecipes
+        let listType = [];
+        let listRecipes;
 
         if (req.query.idType !== '') {
-
             listType = req.query.idType.split(',').map(Number);
             listRecipes = await Recipe.findAll({
                 where: {
-                    idType: { [Op.in]: listType }
+                    idType: { [Op.in]: listType },
                 },
-
-            })
-        }
-        else {
-
-            listRecipes = await Recipe.findAll({
-
-
-            })
+            });
+        } else {
+            listRecipes = await Recipe.findAll({});
         }
         return res.status(200).json({ isSuccess: true, listRecipes });
     } catch (error) {
@@ -960,7 +887,6 @@ const getListRecipeAdmin = async (req, res) => {
 };
 const getListType = async (req, res) => {
     try {
-
         let listType = await Type.findAll({
             include: {
                 model: Recipe_type,
@@ -968,24 +894,23 @@ const getListType = async (req, res) => {
                     {
                         model: Recipe,
                         attributes: ['name', 'info', 'price', 'image', 'isDel'],
-                        
-                    }
-                ]
+                    },
+                ],
             },
             //raw:true,
-        })
+        });
         listType.forEach((type) => {
             type.Recipe_types.forEach((recipe) => {
-                recipe.dataValues.name = recipe.Recipe.dataValues.name
-                recipe.dataValues.info = recipe.Recipe.dataValues.info
-                recipe.dataValues.price = recipe.Recipe.dataValues.price
-                recipe.dataValues.image = recipe.Recipe.dataValues.image
-                recipe.dataValues.isDel = recipe.Recipe.dataValues.isDel
-                delete recipe.dataValues.idType
-                delete recipe.dataValues.Recipe
+                recipe.dataValues.name = recipe.Recipe.dataValues.name;
+                recipe.dataValues.info = recipe.Recipe.dataValues.info;
+                recipe.dataValues.price = recipe.Recipe.dataValues.price;
+                recipe.dataValues.image = recipe.Recipe.dataValues.image;
+                recipe.dataValues.isDel = recipe.Recipe.dataValues.isDel;
+                delete recipe.dataValues.idType;
+                delete recipe.dataValues.Recipe;
             });
-            type.dataValues.listToppings = type.dataValues.Recipe_types
-            delete type.dataValues.Recipe_types
+            type.dataValues.listToppings = type.dataValues.Recipe_types;
+            delete type.dataValues.Recipe_types;
         });
         return res.status(200).json({ isSuccess: true, listType });
     } catch (error) {
@@ -993,32 +918,30 @@ const getListType = async (req, res) => {
     }
 };
 const getIngredientByIdRecipeAdmin = async (idRecipe) => {
-
     let ingredients = await Recipe_ingredient.findAll({
         where: { idRecipe },
-        include: [{
-            model: Ingredient,
-
-        }],
+        include: [
+            {
+                model: Ingredient,
+            },
+        ],
         raw: true,
-    })
-    ingredients = ingredients.map(item => {
-
+    });
+    ingredients = ingredients.map((item) => {
         return {
             idIngredient: item['idIngredient'],
             name: item['Ingredient.name'],
             image: item['Ingredient.image'],
             quantity: item['quantity'],
             unitName: item['Ingredient.unitName'],
-        }
+        };
     });
-    return ingredients
-}
+    return ingredients;
+};
 const detailRecipeAdmin = async (req, res) => {
     try {
-
         //const staff = req.staff
-        const { idRecipe } = req.params
+        const { idRecipe } = req.params;
         //console.log(staff.idShop)
 
         if (idRecipe === '' || isNaN(idRecipe)) {
@@ -1029,43 +952,38 @@ const detailRecipeAdmin = async (req, res) => {
             where: { idRecipe },
 
             raw: true,
-        })
+        });
 
-        let ingredients = await getIngredientByIdRecipeAdmin(idRecipe)
-        console.log(1)
+        let ingredients = await getIngredientByIdRecipeAdmin(idRecipe);
+        console.log(1);
         let listTopping = await Recipe_type.findAll({
             where: { idType: detailRecipe.idType },
             //attributes: [['name', 'Recipe.name']],
-            attributes: [
-                'idRecipe',
-            ],
+            attributes: ['idRecipe'],
             required: true,
             include: [
                 {
                     model: Recipe,
                     attributes: ['name', 'price', 'image'],
                     required: true,
-
-                }
+                },
             ],
-            raw: true
-        })
-        console.log(2)
-        listTopping = listTopping.map(item => {
+            raw: true,
+        });
+        console.log(2);
+        listTopping = listTopping.map((item) => {
             return {
-
                 idRecipe: item['idRecipe'],
                 name: item['Recipe.name'],
 
                 price: item['Recipe.price'],
-                image: item['Recipe.image']
+                image: item['Recipe.image'],
             };
         });
         //console.log(listTopping)
-        console.log(3)
-        detailRecipe.ingredients = ingredients
-        detailRecipe.listTopping = listTopping
-
+        console.log(3);
+        detailRecipe.ingredients = ingredients;
+        detailRecipe.listTopping = listTopping;
 
         return res.status(200).json({ isSuccess: true, detailRecipe });
     } catch (error) {
@@ -1073,9 +991,24 @@ const detailRecipeAdmin = async (req, res) => {
     }
 };
 module.exports = {
-
-    getListManager, addManager, editManager, deleteManager, getSixMonthInputAndOuput,
-    getListShop, editShop, addShop, getSixMonthInputAndOuputAllShop, getListIngredient,
-    addIngredient, editIngredient, getListRecipeAdmin, detailRecipeAdmin, addRecipe, editRecipe,
-    editRecipeIngredient, getListType, addRecipeType, deleteRecipeType
+    getListManager,
+    addManager,
+    editManager,
+    deleteManager,
+    getSixMonthInputAndOuput,
+    getListShop,
+    editShop,
+    addShop,
+    getSixMonthInputAndOuputAllShop,
+    getListIngredient,
+    addIngredient,
+    editIngredient,
+    getListRecipeAdmin,
+    detailRecipeAdmin,
+    addRecipe,
+    editRecipe,
+    editRecipeIngredient,
+    getListType,
+    addRecipeType,
+    deleteRecipeType,
 };
