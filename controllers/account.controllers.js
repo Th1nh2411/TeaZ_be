@@ -1,54 +1,54 @@
-const { Account, User, Staff} = require("../models");
-const db = require("../models/index");
+const { Account, User, Staff } = require('../models');
+const db = require('../models/index');
 const moment = require('moment-timezone'); // require
 
-const { QueryTypes } = require("sequelize");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
+const { QueryTypes } = require('sequelize');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
 const createCustomerWithTransaction = async (phone, password, name) => {
     //console.log('test1')
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
-    
-    let isSuccess
+
+    let isSuccess;
     try {
         //console.log('test2')
         const salt = bcrypt.genSaltSync(10);
         const hashPassword = bcrypt.hashSync(password, salt);
         //console.log('test3')
-        const newAccount = await Account.create({
-            phone,
-            role: 0,
-            password: hashPassword,
-
-        }, { transaction: t });
+        const newAccount = await Account.create(
+            {
+                phone,
+                role: 0,
+                password: hashPassword,
+            },
+            { transaction: t },
+        );
         //console.log('test4')
-        const newCustomer = await User.create({
-            idAcc: newAccount.idAcc,
-            name,
-            isShare: 1,
-
-        }, { transaction: t });
+        const newCustomer = await User.create(
+            {
+                idAcc: newAccount.idAcc,
+                name,
+                isShare: 1,
+            },
+            { transaction: t },
+        );
 
         //console.log('test5')
         //console.log('test3')
 
-
         await t.commit(); // Lưu thay đổi và kết thúc transaction
-        isSuccess = true
+        isSuccess = true;
     } catch (error) {
-        isSuccess = false
+        isSuccess = false;
         await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction
-        
     }
 
-    return isSuccess
-}
+    return isSuccess;
+};
 
 const createAccountForCustomer = async (req, res) => {
-    
-   
     try {
         const { phone, password, name } = req.body;
         if (phone === '' || password === '' || name === '') {
@@ -58,79 +58,72 @@ const createAccountForCustomer = async (req, res) => {
             return res.status(400).json({ isSuccess: false, mes: 'addStaff2' });
         }
         //tạo ra một chuỗi ngẫu nhiên
-        let isSuccess = await createCustomerWithTransaction(phone,password, name)
-       
+        let isSuccess = await createCustomerWithTransaction(phone, password, name);
+
         res.status(200).json({
-
-            isSuccess
+            isSuccess,
         });
-
     } catch (error) {
         res.status(500).json({
             isExist: true,
-            isSuccess:false
+            isSuccess: false,
         });
     }
 };
 //tam thoi chua co
 
-const loginAdmin = async (req, res) => {
-
-};
+const loginAdmin = async (req, res) => {};
 
 const login = async (req, res) => {
     try {
         const { phone, password } = req.body;
-        const account = req.account
-        //console.log(account)
+        const account = req.account;
         const isAuth = bcrypt.compareSync(password, account.password);
-        
+
         if (isAuth) {
-            let customer
-            if(account.role==0){{
-                customer = await User.findOne({
-                    where: {
-                        idAcc: account.idAcc,
-                    },
-                });
-            }}
-            else{
+            let customer;
+            if (account.role == 0) {
+                {
+                    customer = await User.findOne({
+                        where: {
+                            idAcc: account.idAcc,
+                        },
+                    });
+                }
+            } else {
                 customer = await Staff.findOne({
                     where: {
                         idAcc: account.idAcc,
                     },
                 });
             }
-            
-            const token = jwt.sign({ phone: account.phone }, "hehehe", {
-                expiresIn: 30*60 * 60 * 60,
+
+            const token = jwt.sign({ phone: account.phone }, 'hehehe', {
+                expiresIn: 30 * 60 * 60 * 60,
             });
-            customer.dataValues.phone = phone
-            customer.dataValues.role = account.role
-            
-            res
-                .status(200)
-                .json({
-                    customer,
-                    isSuccess : true,
-                    
-                    token,
-                    
-                    expireTime: 30*60 * 60 * 60,
-                });
+            customer.dataValues.phone = phone;
+            customer.dataValues.role = account.role;
+
+            res.status(200).json({
+                customer,
+                isSuccess: true,
+
+                token,
+
+                expireTime: 30 * 60 * 60 * 60,
+            });
         } else {
-            return res.status(401).json({ isSuccess:false});
+            return res.status(401).json({ isSuccess: false });
         }
     } catch (error) {
-        return res.status(500).json({ isSuccess:false});
+        return res.status(500).json({ isSuccess: false });
     }
-   
 };
 
 const changePassword = async (req, res) => {
     const { oldPassword, newPassword, repeatPassword } = req.body;
-    console.log("test")
-    console.log(req.mail)
+    console.log('test');
+    console.log(req.mail);
     try {
         const accountUpdate = await Account.findOne({
             where: {
@@ -154,33 +147,33 @@ const changePassword = async (req, res) => {
                     await accountUpdate.save();
                     res.status(200).json({
                         status: true,
-                        isSuccess: true
+                        isSuccess: true,
                     });
                 }
             } else {
                 res.status(400).json({
                     status: true,
-                    isSuccess:false
+                    isSuccess: false,
                 });
             }
         } else {
             res.status(400).json({
                 status: false,
-                isSuccess:false
+                isSuccess: false,
             });
         }
     } catch (error) {
         res.status(500).json({
             status: true,
-            isSuccess:false
+            isSuccess: false,
         });
     }
 };
 
 const logout = async (req, res, next) => {
-    res.removeHeader("access_token");
+    res.removeHeader('access_token');
 
-    res.status(200).json({ isSuccess:true});
+    res.status(200).json({ isSuccess: true });
 };
 
 const forgotPassword = async (req, res) => {
@@ -195,35 +188,31 @@ const forgotPassword = async (req, res) => {
         if (isExist1 !== null) {
             res.status(400).json({
                 isExist: true,
-                isSuccess:false
+                isSuccess: false,
             });
         } else {
-            
-            await Account.sequelize.query(
-                "UPDATE accounts SET forgot = :randomID WHERE mail = :mail",
-                {
-                    type: QueryTypes.UPDATE,
-                    replacements: {
-                        randomID: randomID,
-                        mail: mail,
-                    },
-                }
-            );
+            await Account.sequelize.query('UPDATE accounts SET forgot = :randomID WHERE mail = :mail', {
+                type: QueryTypes.UPDATE,
+                replacements: {
+                    randomID: randomID,
+                    mail: mail,
+                },
+            });
             let transporter = nodemailer.createTransport({
-                host: "smtp.gmail.com",
+                host: 'smtp.gmail.com',
                 port: 587,
                 secure: false, // true for 465, false for other ports
                 auth: {
-                    user: "n19dccn107@student.ptithcm.edu.vn", // generated ethereal user
-                    pass: "bqztpfkmmbpzmdxl", // generated ethereal password
+                    user: 'n19dccn107@student.ptithcm.edu.vn', // generated ethereal user
+                    pass: 'bqztpfkmmbpzmdxl', // generated ethereal password
                 },
             });
             // send mail with defined transport object
             await transporter.sendMail({
-                from: "n19dccn107@student.ptithcm.edu.vn", // sender address
+                from: 'n19dccn107@student.ptithcm.edu.vn', // sender address
                 to: `${mail}`, // list of receivers
-                subject: "FORGOT PASSWORD", // Subject line
-                text: "FORGOT PASSWORD", // plain text body
+                subject: 'FORGOT PASSWORD', // Subject line
+                text: 'FORGOT PASSWORD', // plain text body
                 html: `Mã xác nhận của bạn là: ${randomID}`, // html body
             });
 
@@ -236,31 +225,29 @@ const forgotPassword = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             isExist: true,
-            isSuccess:false
+            isSuccess: false,
         });
     }
 };
-
-
 
 const verify = async (req, res, next) => {
     const { verifyID, mail } = req.body;
     const account = await Account.findOne({
         where: {
             forgot: verifyID,
-            mail
+            mail,
         },
         raw: true,
     });
     if (account) {
         res.status(200).json({
             message: `Mã xác nhận chính xác!`,
-            isSuccess: true
+            isSuccess: true,
         });
     } else {
         res.status(400).json({
             message: `Mã xác nhận không chính xác!`,
-            isSuccess: false
+            isSuccess: false,
         });
     }
 };
@@ -270,7 +257,7 @@ const accessForgotPassword = async (req, res, next) => {
     if (password != repeatPassword) {
         res.status(400).json({
             message: `Mật khẩu lặp lại không chính xác!`,
-            isSuccess:false
+            isSuccess: false,
         });
     } else {
         const salt = bcrypt.genSaltSync(10);
@@ -288,21 +275,25 @@ const accessForgotPassword = async (req, res, next) => {
             await accountUpdate.save();
             res.status(200).json({
                 message: `Lấy lại mật khẩu thành công!`,
-                isSuccess:true
+                isSuccess: true,
             });
         } catch (error) {
             res.status(500).json({
                 message: `Lấy lại mật khẩu thất bại!`,
-                isSuccess:false
+                isSuccess: false,
             });
         }
     }
 };
 
-
-
-
 module.exports = {
     // getDetailTaiKhoan,
-    login, logout, createAccountForCustomer, changePassword, forgotPassword, loginAdmin, verify, accessForgotPassword
+    login,
+    logout,
+    createAccountForCustomer,
+    changePassword,
+    forgotPassword,
+    loginAdmin,
+    verify,
+    accessForgotPassword,
 };

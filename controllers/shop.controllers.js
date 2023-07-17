@@ -1,31 +1,15 @@
-const {
-    Shop,
-    Recipe_shop,
-    Recipe,
-    Ingredient,
-    Recipe_ingredient,
-    Ingredient_shop,
-    Import,
-    Export,
-} = require('../models');
+const { Shop, Recipe, Ingredient, Recipe_ingredient, Import, Export } = require('../models');
 const db = require('../models/index');
 const { QueryTypes, Op, where, sequelize } = require('sequelize');
 const moment = require('moment-timezone'); // require
 const { raw } = require('body-parser');
 
-const getIngredientByIdRecipe = async (idRecipe, idShop) => {
+const getIngredientByIdRecipe = async (idRecipe) => {
     let ingredients = await Recipe_ingredient.findAll({
         where: { idRecipe },
         include: [
             {
                 model: Ingredient,
-                include: [
-                    {
-                        model: Ingredient_shop,
-                        where: { idShop },
-                        required: false,
-                    },
-                ],
             },
         ],
         raw: true,
@@ -57,7 +41,6 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
             infoChange = await Import.create(
                 {
                     idIngredient: ingredient.idIngredient,
-                    idShop: ingredient.idShop,
                     date: date,
                     quantity: quantity,
                     price: price,
@@ -73,7 +56,6 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
             infoChange = await Export.create(
                 {
                     idIngredient: ingredient.idIngredient,
-                    idShop: ingredient.idShop,
                     date: date,
                     quantity: quantity,
                     info: price,
@@ -105,9 +87,6 @@ const menuByTypeForStaff = async (req, res) => {
         if (req.query.idType !== '') {
             listType = req.query.idType.split(',').map(Number);
             menu = await Recipe_shop.findAll({
-                where: {
-                    idShop: staff.idShop,
-                },
                 attributes: ['discount', 'isActive'],
                 include: [
                     {
@@ -118,9 +97,6 @@ const menuByTypeForStaff = async (req, res) => {
             });
         } else {
             menu = await Recipe_shop.findAll({
-                where: {
-                    idShop: staff.idShop,
-                },
                 attributes: ['discount', 'isActive'],
                 include: [
                     {
@@ -138,7 +114,6 @@ const detailRecipe = async (req, res) => {
     try {
         const staff = req.staff;
         const { idRecipe } = req.params;
-        //console.log(staff.idShop)
 
         if (idRecipe === '' || isNaN(idRecipe)) {
             return res.status(400).json({ isSuccess: false, mes: 'detailRecipe' });
@@ -149,13 +124,12 @@ const detailRecipe = async (req, res) => {
             include: [
                 {
                     model: Recipe_shop,
-                    where: { idShop: staff.idShop },
                     attributes: ['isActive', 'discount'],
                 },
             ],
             raw: true,
         });
-        let ingredients = await getIngredientByIdRecipe(idRecipe, staff.idShop);
+        let ingredients = await getIngredientByIdRecipe(idRecipe);
         //console.log(1)
         //console.log(recipe['Recipe_shops.isActive'])
         recipe.isActive = recipe['Recipe_shops.isActive'];
@@ -209,31 +183,26 @@ const editRecipeShop = async (req, res) => {
 };
 const menuByTypeForUser = async (req, res) => {
     try {
-        if (req.query.idShop == '') {
-            return res.status(400).json({ isSuccess: true });
-        }
-        const idShop = parseInt(req.query.idShop);
         let listType = [];
         let menu;
         if (req.query.idType !== '') {
             listType = req.query.idType.split(',').map(Number);
-            menu = await Recipe_shop.findAll({
+            menu = await Recipe.findAll({
                 where: {
-                    idShop: idShop,
                     isActive: 1,
+                    idType: { [Op.in]: listType },
                 },
-                attributes: ['discount'],
-                include: [
-                    {
-                        model: Recipe,
-                        where: { idType: { [Op.in]: listType } },
-                    },
-                ],
+                // attributes: ['discount'],
+                // include: [
+                //     {
+                //         model: Recipe,
+                //         where: { idType: { [Op.in]: listType } },
+                //     },
+                // ],
             });
         } else {
-            menu = await Recipe_shop.findAll({
+            menu = await Recipe.findAll({
                 where: {
-                    idShop: idShop,
                     isActive: 1,
                 },
                 attributes: ['discount'],
@@ -256,7 +225,6 @@ const getInfoShop = async (req, res) => {
         const staff = req.staff;
 
         const shop = await Shop.findOne({
-            where: { idShop: staff.idShop },
             attributes: ['address', 'image', 'isActive'],
         });
 
@@ -271,7 +239,6 @@ const getListIngredientShop = async (req, res) => {
         const staff = req.staff;
 
         let ingredients = await Ingredient_shop.findAll({
-            where: { idShop: staff.idShop },
             include: [
                 {
                     model: Ingredient,
@@ -311,7 +278,6 @@ const editInfoShop = async (req, res) => {
         let shop;
         if (Number(isActive) == 1 || Number(isActive) == 0) {
             shop = await Shop.findOne({
-                where: { idShop: staff.idShop },
                 //attributes: ['address','image','isActive'],
             });
 
@@ -383,6 +349,37 @@ const exportIngredient = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi tại exportIngredient' });
     }
 };
+const getListType = async (req, res) => {
+    try {
+        let listType = await Type.findAll({
+            include: {
+                model: Recipe_type,
+                include: [
+                    {
+                        model: Recipe,
+                        attributes: ['name', 'info', 'price', 'image'],
+                    },
+                ],
+            },
+            //raw:true,
+        });
+        listType.forEach((type) => {
+            type.Recipe_types.forEach((recipe) => {
+                recipe.dataValues.name = recipe.Recipe.dataValues.name;
+                recipe.dataValues.info = recipe.Recipe.dataValues.info;
+                recipe.dataValues.price = recipe.Recipe.dataValues.price;
+                recipe.dataValues.image = recipe.Recipe.dataValues.image;
+                delete recipe.dataValues.idType;
+                delete recipe.dataValues.Recipe;
+            });
+            type.dataValues.listToppings = type.dataValues.Recipe_types;
+            delete type.dataValues.Recipe_types;
+        });
+        return res.status(200).json({ isSuccess: true, listType });
+    } catch (error) {
+        res.status(500).json({ error: 'getListRecipeAdmin' });
+    }
+};
 module.exports = {
     // getDetailTaiKhoan,
     menuByTypeForUser,
@@ -396,4 +393,5 @@ module.exports = {
     exportIngredient,
     getIngredientByIdRecipe,
     changeQuantityIngredientShopWithTransaction,
+    getListType,
 };

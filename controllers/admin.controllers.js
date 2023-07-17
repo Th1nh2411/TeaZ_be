@@ -2,7 +2,6 @@ const {
     Shop,
     Ingredient,
     Type,
-    Recipe_shop,
     Recipe,
     Recipe_type,
     Recipe_ingredient,
@@ -11,14 +10,12 @@ const {
     Account,
     Import,
     Export,
-    Ingredient_shop,
 } = require('../models');
 const { QueryTypes, Op, where, STRING, NUMBER } = require('sequelize');
 const db = require('../models/index');
 const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone'); // require
 const { getDetailCart } = require('./order.controllers');
-const { raw } = require('body-parser');
 
 const deleteStaffWithTransaction = async (account, staff) => {
     //console.log('test1')
@@ -41,7 +38,7 @@ const deleteStaffWithTransaction = async (account, staff) => {
     return isSuccess;
 };
 
-const createManagerWithTransaction = async (phone, password, name, idShop) => {
+const createManagerWithTransaction = async (phone, password, name) => {
     //console.log('test1')
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
 
@@ -64,7 +61,6 @@ const createManagerWithTransaction = async (phone, password, name, idShop) => {
             {
                 idAcc: newAccount.idAcc,
                 name,
-                idShop,
                 isShare: 1,
             },
             { transaction: t },
@@ -148,8 +144,8 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
     }
     return listTotalAndTotalAmountImpot;
 };
-const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
-    let listTotalAndTotalAmountImpot = [];
+const getTotalAndTotalImport = async (dateRangeArray) => {
+    let listTotalAndTotalAmountImport = [];
 
     for (var i = 0; i < dateRangeArray.length; i++) {
         // Lấy đối tượng dateRange tại vị trí i
@@ -161,7 +157,6 @@ const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
         var month = dateRange.month;
         let invoices = await Invoice.findAll({
             where: {
-                idShop: idShop,
                 date: {
                     [Op.gte]: startDate,
                     [Op.lt]: endDate,
@@ -182,7 +177,6 @@ const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
-
                 detail,
             };
         });
@@ -191,7 +185,7 @@ const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
         let countInvoices = 0;
         countInvoices = invoices.length;
         // In ra các giá trị
-        let { totalAmountImport } = await getChangeIngredientShopInfo(idShop, startDate, endDate, 0);
+        let { totalAmountImport } = await getChangeIngredientShopInfo(startDate, endDate, 0);
 
         var totalAndTotalAmountImport = {
             month: month,
@@ -199,9 +193,9 @@ const getTotalAndTotalImport = async (dateRangeArray, idShop) => {
             countInvoices: countInvoices,
             totalAmountImport: totalAmountImport,
         };
-        listTotalAndTotalAmountImpot.push(totalAndTotalAmountImport);
+        listTotalAndTotalAmountImport.push(totalAndTotalAmountImport);
     }
-    return listTotalAndTotalAmountImpot;
+    return listTotalAndTotalAmountImport;
 };
 const getChangeIngredientShopInfoAllShop = async (startDate, endDate, type) => {
     let imports = await Import.findAll({
@@ -227,7 +221,6 @@ const getChangeIngredientShopInfoAllShop = async (startDate, endDate, type) => {
     if (type == 1) {
         let exports = await Export.findAll({
             where: {
-                idShop: idShop,
                 date: {
                     [Op.gte]: startDate,
                     [Op.lt]: endDate,
@@ -248,10 +241,9 @@ const getChangeIngredientShopInfoAllShop = async (startDate, endDate, type) => {
         return { imports, totalAmountImport, exportsBH, exportsWithoutBH };
     } else return { totalAmountImport };
 };
-const getChangeIngredientShopInfo = async (idShop, startDate, endDate, type) => {
+const getChangeIngredientShopInfo = async (startDate, endDate, type) => {
     let imports = await Import.findAll({
         where: {
-            idShop: idShop,
             date: {
                 [Op.gte]: startDate,
                 [Op.lt]: endDate,
@@ -273,7 +265,6 @@ const getChangeIngredientShopInfo = async (idShop, startDate, endDate, type) => 
     if (type == 1) {
         let exports = await Export.findAll({
             where: {
-                idShop: idShop,
                 date: {
                     [Op.gte]: startDate,
                     [Op.lt]: endDate,
@@ -441,7 +432,6 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
 const getSixMonthInputAndOuput = async (req, res) => {
     try {
         //const staff = req.staff
-        const { idShop } = req.params;
         var currentDate = moment();
 
         var dateRangeArray = [];
@@ -458,13 +448,11 @@ const getSixMonthInputAndOuput = async (req, res) => {
             dateRangeArray.push(dateRange);
         }
         // Lặp qua mảng dateRangeArray
-        let listTotalAndTotalAmountImport = await getTotalAndTotalImport(dateRangeArray, idShop);
+        let listTotalAndTotalAmountImport = await getTotalAndTotalImport(dateRangeArray);
 
         //console.log(dateRangeArray);
 
-        // let { imports, totalAmountImport, exportsBH, exportsWithoutBH } = await getChangeIngredientShopInfo(staff.idShop, startDate, endDate, 1)
-
-        return res.status(200).json({ isSuccess: true, listTotalAndTotalAmountImport, idShop });
+        return res.status(200).json({ isSuccess: true, listTotalAndTotalAmountImport });
     } catch (error) {
         res.status(500).json({ error, mes: 'reportByDate' });
     }
@@ -493,8 +481,6 @@ const getSixMonthInputAndOuputAllShop = async (req, res) => {
 
         //console.log(dateRangeArray);
 
-        // let { imports, totalAmountImport, exportsBH, exportsWithoutBH } = await getChangeIngredientShopInfo(staff.idShop, startDate, endDate, 1)
-
         return res.status(200).json({ isSuccess: true, listTotalAndTotalAmountImport });
     } catch (error) {
         res.status(500).json({ error, mes: 'reportByDate' });
@@ -508,7 +494,7 @@ const getListManager = async (req, res) => {
             include: [
                 {
                     model: Staff,
-                    attributes: ['idStaff', 'idShop', 'name'],
+                    attributes: ['idStaff', 'name'],
                     required: true,
                 },
             ],
@@ -519,7 +505,6 @@ const getListManager = async (req, res) => {
             return {
                 idStaff: item['Staff.idStaff'],
                 name: item['Staff.name'],
-                idShop: item['Staff.idShop'],
                 phone: item['phone'],
                 role: item['role'],
             };
@@ -532,7 +517,7 @@ const getListManager = async (req, res) => {
 const getListShop = async (req, res) => {
     try {
         let listShops = await Shop.findAll({
-            attributes: ['idShop', 'address', 'image', 'isActive', 'latitude', 'longitude'],
+            attributes: ['address', 'image', 'isActive', 'latitude', 'longitude'],
 
             //raw: true,
         });
@@ -542,7 +527,6 @@ const getListShop = async (req, res) => {
         //      return {
         //         idStaff: item['Staff.idStaff'],
         //         name: item['Staff.name'],
-        //         idShop: item['Staff.idShop'],
         //         phone: item['phone'],
 
         //     }
@@ -601,7 +585,7 @@ const editManager = async (req, res) => {
     try {
         const staff = req.staff;
         const { idStaff } = req.params;
-        const { phone, name, password, idShop } = req.body;
+        const { phone, name, password } = req.body;
 
         let infoStaff = await Staff.findOne({
             where: { idStaff: idStaff },
@@ -614,9 +598,7 @@ const editManager = async (req, res) => {
         if (phone) {
             account.phone = phone;
         }
-        if (idShop) {
-            infoStaff.idShop = idShop;
-        }
+
         if (name) {
             infoStaff.name = name;
         }
@@ -635,12 +617,9 @@ const editManager = async (req, res) => {
 const editShop = async (req, res) => {
     try {
         const staff = req.staff;
-        const { idShop } = req.params;
         const { address, image, latitude, longitude, isActive } = req.body;
 
-        let infoShop = await Shop.findOne({
-            where: { idShop: idShop },
-        });
+        let infoShop = await Shop.findOne();
         //console.log(1)
         if (!infoShop) return res.status(409).send({ isSuccess: false, mes: 'Shop không tồn tại' });
         if (image) {
@@ -668,23 +647,23 @@ const editShop = async (req, res) => {
     }
 };
 
-const addManager = async (req, res) => {
-    try {
-        const staff = req.staff;
-        const { phone, password, name, idShop } = req.body;
-        if (phone === '' || password === '' || name === '' || idShop === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'addManager1' });
-        }
-        if (isNaN(phone) || isNaN(idShop) || password === undefined || name === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'addManager2' });
-        }
-        let isSuccess = await createManagerWithTransaction(phone, password, name, idShop);
+// const addManager = async (req, res) => {
+//     try {
+//         const staff = req.staff;
+//         const { phone, password, name } = req.body;
+//         if (phone === '' || password === '' || name === '' ) {
+//             return res.status(400).json({ isSuccess: false, mes: 'addManager1' });
+//         }
+//         if (isNaN(phone)  || password === undefined || name === undefined) {
+//             return res.status(400).json({ isSuccess: false, mes: 'addManager2' });
+//         }
+//         let isSuccess = await createManagerWithTransaction(phone, password, name,);
 
-        return res.status(200).json({ isSuccess });
-    } catch (error) {
-        res.status(500).json({ error, mes: 'addManager' });
-    }
-};
+//         return res.status(200).json({ isSuccess });
+//     } catch (error) {
+//         res.status(500).json({ error, mes: 'addManager' });
+//     }
+// };
 const addShop = async (req, res) => {
     try {
         let { address, image, latitude, longitude, isActive } = req.body;
@@ -879,37 +858,7 @@ const getListRecipeAdmin = async (req, res) => {
         res.status(500).json({ error, mes: 'getListRecipeAdmin' });
     }
 };
-const getListType = async (req, res) => {
-    try {
-        let listType = await Type.findAll({
-            include: {
-                model: Recipe_type,
-                include: [
-                    {
-                        model: Recipe,
-                        attributes: ['name', 'info', 'price', 'image'],
-                    },
-                ],
-            },
-            //raw:true,
-        });
-        listType.forEach((type) => {
-            type.Recipe_types.forEach((recipe) => {
-                recipe.dataValues.name = recipe.Recipe.dataValues.name;
-                recipe.dataValues.info = recipe.Recipe.dataValues.info;
-                recipe.dataValues.price = recipe.Recipe.dataValues.price;
-                recipe.dataValues.image = recipe.Recipe.dataValues.image;
-                delete recipe.dataValues.idType;
-                delete recipe.dataValues.Recipe;
-            });
-            type.dataValues.listToppings = type.dataValues.Recipe_types;
-            delete type.dataValues.Recipe_types;
-        });
-        return res.status(200).json({ isSuccess: true, listType });
-    } catch (error) {
-        res.status(500).json({ error, mes: 'getListRecipeAdmin' });
-    }
-};
+
 const getIngredientByIdRecipeAdmin = async (idRecipe) => {
     let ingredients = await Recipe_ingredient.findAll({
         where: { idRecipe },
@@ -935,7 +884,6 @@ const detailRecipeAdmin = async (req, res) => {
     try {
         //const staff = req.staff
         const { idRecipe } = req.params;
-        //console.log(staff.idShop)
 
         if (idRecipe === '' || isNaN(idRecipe)) {
             return res.status(400).json({ isSuccess: false, mes: 'detailRecipeAdmin1' });
@@ -985,9 +933,9 @@ const detailRecipeAdmin = async (req, res) => {
 };
 module.exports = {
     getListManager,
-    addManager,
-    editManager,
+    // addManager,
     deleteManager,
+    editManager,
     getSixMonthInputAndOuput,
     getListShop,
     editShop,
@@ -1001,7 +949,6 @@ module.exports = {
     addRecipe,
     editRecipe,
     editRecipeIngredient,
-    getListType,
     addRecipeType,
     deleteRecipeType,
 };

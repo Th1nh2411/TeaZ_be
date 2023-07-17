@@ -68,7 +68,7 @@ const checkExistAccount = () => {
             //console.log(1)
             //const staff = req.staff
             const { phone } = req.body;
-
+            console.log(req.body);
             if (phone === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
             }

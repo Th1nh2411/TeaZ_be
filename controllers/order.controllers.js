@@ -33,7 +33,6 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvo
         let ingredient = await Ingredient_shop.findOne({
             where: {
                 idIngredient,
-                idShop,
             },
         });
         let quantityIngredient = Number(item['quantity']) * quantity;
@@ -131,7 +130,7 @@ const getToppingOfProductOfInvoice = async (idProduct) => {
     return listTopping;
 };
 
-const getToppingOfProduct = async (idProduct, idShop) => {
+const getToppingOfProduct = async (idProduct) => {
     //console.log('test')
     let listTopping = await Product.findAll({
         where: {
@@ -146,7 +145,7 @@ const getToppingOfProduct = async (idProduct, idShop) => {
                 include: [
                     {
                         model: Recipe_shop,
-                        where: { idShop, isActive: 1 },
+                        where: { isActive: 1 },
                         required: false,
                         attributes: ['discount'],
                     },
@@ -271,7 +270,7 @@ const getDetailCart = async (idCart) => {
     return cart;
 };
 
-const getCurrentCartAndTotal = async (user, idShop) => {
+const getCurrentCartAndTotal = async (user) => {
     let cart = await Cart.findAll({
         where: {
             idUser: user.idUser,
@@ -296,7 +295,7 @@ const getCurrentCartAndTotal = async (user, idShop) => {
                                 include: [
                                     {
                                         model: Recipe_shop,
-                                        where: { idShop, isActive: 1 },
+                                        where: { isActive: 1 },
                                         attributes: ['discount'],
                                     },
                                 ],
@@ -315,10 +314,7 @@ const getCurrentCartAndTotal = async (user, idShop) => {
     let listIdProduct = '';
 
     const promises = cart.map(async (item) => {
-        let { listTopping, totalProduct, mes, edit } = await getToppingOfProduct(
-            item['Cart_products.idProduct'],
-            idShop,
-        );
+        let { listTopping, totalProduct, mes, edit } = await getToppingOfProduct(item['Cart_products.idProduct']);
 
         mes.forEach((item1) => {
             if (!nameSet.has(item1.name)) {
@@ -376,7 +372,6 @@ const getCurrentCartAndTotal = async (user, idShop) => {
 const getToppingOptions = async (req, res) => {
     try {
         const idRecipe = Number(req.query.idRecipe);
-        const idShop = Number(req.query.idShop);
 
         const detailRecipe = await Recipe.findOne({
             where: { idRecipe },
@@ -399,7 +394,7 @@ const getToppingOptions = async (req, res) => {
                     include: [
                         {
                             model: Recipe_shop,
-                            where: { isActive: 1, idShop },
+                            where: { isActive: 1 },
                             required: true,
                         },
                     ],
@@ -572,9 +567,8 @@ const confirmInvoice = async (req, res) => {
 const getCurrentCart = async (req, res) => {
     try {
         const user = req.user;
-        const { idShop } = req.params;
 
-        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user, idShop);
+        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
         //console.log(listTopping)
         listIdProduct = listIdProduct.slice(0, -1);
 
@@ -631,8 +625,7 @@ const cancelInvoice = async (req, res) => {
 
         if (invoice.status == 0) {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
-            const idShop = invoice.idShop;
-            let infoChange = await changeIngredientByInvoice(invoice, idShop, 1, date);
+            let infoChange = await changeIngredientByInvoice(invoice, 1, date);
             await invoice.destroy();
             return res
                 .status(200)
@@ -693,17 +686,17 @@ const getAllInvoiceUser = async (req, res) => {
 };
 const createInvoice = async (req, res) => {
     try {
-        const { idShipping_company, shippingFee, idShop } = req.body;
-        if (idShipping_company === undefined || shippingFee === undefined || idShop === undefined) {
+        const { idShipping_company, shippingFee } = req.body;
+        if (idShipping_company === undefined || shippingFee === undefined) {
             return res.status(400).json({ isSuccess: false });
         }
-        if (idShipping_company === '' || shippingFee === '' || idShop === '') {
+        if (idShipping_company === '' || shippingFee === '') {
             return res.status(400).json({ isSuccess: false });
         }
         //console.log(idShipping_company)
         const user = req.user;
         const currentCart = req.currentCart;
-        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user, idShop);
+        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
 
         //console.log(listIdProduct)
         if (listIdProduct != '') {
@@ -713,7 +706,6 @@ const createInvoice = async (req, res) => {
         const date = moment().format('YYYY-MM-DD HH:mm:ss');
         let invoice = await Invoice.create({
             idCart: currentCart.idCart,
-            idShop,
             idShipping_company,
             shippingFee,
             total,
@@ -729,7 +721,6 @@ const createInvoice = async (req, res) => {
             let invoice = await Invoice.create(
                 {
                     idCart: currentCart.idCart,
-                    idShop,
                     idShipping_company,
                     shippingFee,
                     total,
@@ -742,7 +733,7 @@ const createInvoice = async (req, res) => {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
             idInvoice = invoice.idInvoice;
             currentCart.isCurrent = 0;
-            let infoChange = await changeIngredientByInvoice(invoice, idShop, 0, date, { transaction: t });
+            let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
             await currentCart.save({ transaction: t });
             //await invoice.destroy()
 
@@ -761,17 +752,17 @@ const createInvoice = async (req, res) => {
 };
 const testInvoice = async (req, res) => {
     try {
-        const { idShipping_company, shippingFee, idShop } = req.body;
-        if (idShipping_company === undefined || shippingFee === undefined || idShop === undefined) {
+        const { idShipping_company, shippingFee } = req.body;
+        if (idShipping_company === undefined || shippingFee === undefined) {
             return res.status(400).json({ isSuccess: false });
         }
-        if (idShipping_company === '' || shippingFee === '' || idShop === '') {
+        if (idShipping_company === '' || shippingFee === '') {
             return res.status(400).json({ isSuccess: false });
         }
         //console.log(idShipping_company)
         const user = req.user;
         const currentCart = req.currentCart;
-        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user, idShop);
+        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
 
         //console.log(listIdProduct)
         if (listIdProduct != '') {
@@ -783,7 +774,6 @@ const testInvoice = async (req, res) => {
             let invoice = await Invoice.create(
                 {
                     idCart: currentCart.idCart,
-                    idShop,
                     idShipping_company,
                     shippingFee,
                     total,
@@ -796,7 +786,7 @@ const testInvoice = async (req, res) => {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
             const idInvoice = invoice.idInvoice;
             currentCart.isCurrent = 0;
-            let infoChange = await changeIngredientByInvoice(invoice, idShop, 0, date, { transaction: t });
+            let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
             //await currentCart.save()
             //await invoice.destroy()
 
@@ -819,7 +809,6 @@ const getAllOrderInTransit = async (req, res) => {
 
         let invoices = await Invoice.findAll({
             where: {
-                idShop: staff.idShop,
                 status: 2,
             },
             attributes: ['idInvoice', 'date', 'idCart'],
@@ -861,7 +850,6 @@ const getAllInvoiceByDate = async (req, res) => {
         const endDate = moment(date).endOf('day').toDate();
         let invoices = await Invoice.findAll({
             where: {
-                idShop: staff.idShop,
                 date: {
                     [Op.gte]: startDate,
                     [Op.lt]: endDate,
@@ -902,7 +890,6 @@ const getAllOrder = async (req, res) => {
 
         let invoices = await Invoice.findAll({
             where: {
-                idShop: staff.idShop,
                 status: 1,
             },
             attributes: ['idInvoice', 'date', 'idCart'],
@@ -931,17 +918,16 @@ const getAllOrder = async (req, res) => {
 };
 const searchRecipe = async (req, res) => {
     try {
-        if (req.query.idShop === '' || req.query.name === '' || req.query.limit === '') {
+        if (req.query.name === '' || req.query.limit === '') {
             return res.status(400).json({ isSuccess: false, mes: 'searchRecipe1' });
         }
 
-        if (isNaN(req.query.limit) || req.query.name === undefined || isNaN(req.query.idShop)) {
+        if (isNaN(req.query.limit) || req.query.name === undefined) {
             return res.status(400).json({ isSuccess: false, mes: 'searchRecipe2' });
         }
 
         const name = req.query.name;
         const limit = Number(req.query.limit);
-        const idShop = Number(req.query.idShop);
 
         let recipes = await Recipe.findAll({
             where: {
@@ -953,7 +939,7 @@ const searchRecipe = async (req, res) => {
             include: [
                 {
                     model: Recipe_shop,
-                    where: { isActive: 1, idShop },
+                    where: { isActive: 1 },
                     required: true,
                     attributes: ['discount'],
                 },
