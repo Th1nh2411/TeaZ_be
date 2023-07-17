@@ -9,7 +9,7 @@ module.exports = {
             },
             isActive: {
                 allowNull: false,
-                type: Sequelize.INTEGER,
+                type: Sequelize.BOOLEAN,
             },
             latitude: {
                 //vĩ độ

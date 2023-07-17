@@ -33,13 +33,10 @@ module.exports = {
                 type: Sequelize.TEXT,
                 allowNull: false,
             },
-            isDel: {
-                allowNull: false,
-                type: Sequelize.INTEGER,
-            },
+
             isActive: {
                 allowNull: false,
-                type: Sequelize.INTEGER,
+                type: Sequelize.BOOLEAN,
             },
             discount: {
                 allowNull: false,

@@ -43,9 +43,9 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 type: DataTypes.STRING(10),
             },
-            isDel: {
+            isActive: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
+                type: DataTypes.BOOLEAN,
                 defaultValue: 0, // Giá trị mặc định là 1
             },
             quantity: {

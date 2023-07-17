@@ -12,7 +12,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -23,7 +23,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -34,7 +34,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -45,7 +45,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -56,7 +56,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -67,7 +67,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -78,7 +78,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -89,7 +89,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -100,7 +100,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -111,7 +111,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -122,7 +122,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
             {
@@ -133,7 +133,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 discount: 100,
-                isDel: 0,
+
                 quantity: 0,
             },
         ]);

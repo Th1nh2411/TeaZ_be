@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             isActive: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
+                type: DataTypes.BOOLEAN,
             },
             image: {
                 allowNull: false,

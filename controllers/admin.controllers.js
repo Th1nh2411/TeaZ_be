@@ -573,7 +573,7 @@ const deleteManager = async (req, res) => {
 const editIngredient = async (req, res) => {
     try {
         let ingredient = req.ingredient;
-        const { name, unitName, image, isDel } = req.body;
+        const { name, unitName, image, isActive } = req.body;
 
         if (name) {
             ingredient.name = name;
@@ -584,11 +584,11 @@ const editIngredient = async (req, res) => {
         if (image) {
             ingredient.image = image;
         }
-        if (isDel) {
-            if (Number(isDel) == 1) {
-                ingredient.isDel = 1;
+        if (isActive) {
+            if (Number(isActive) == 1) {
+                ingredient.isActive = 1;
             } else {
-                ingredient.isDel = 0;
+                ingredient.isActive = 0;
             }
         }
         await ingredient.save();
@@ -762,7 +762,7 @@ const addRecipe = async (req, res) => {
 };
 const editRecipe = async (req, res) => {
     try {
-        const { image, info, name, price, idType, isDel } = req.body;
+        const { image, info, name, price, idType } = req.body;
         const { idRecipe } = req.params;
         let infoRecipe = await Recipe.findOne({
             where: { idRecipe: idRecipe },
@@ -789,13 +789,7 @@ const editRecipe = async (req, res) => {
         if (price) {
             infoRecipe.price = price;
         }
-        if (isDel) {
-            if (Number(isDel) == 1) {
-                infoRecipe.isDel = 1;
-            } else {
-                infoRecipe.isDel = 0;
-            }
-        }
+        i;
         await infoRecipe.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
@@ -893,7 +887,7 @@ const getListType = async (req, res) => {
                 include: [
                     {
                         model: Recipe,
-                        attributes: ['name', 'info', 'price', 'image', 'isDel'],
+                        attributes: ['name', 'info', 'price', 'image'],
                     },
                 ],
             },
@@ -905,7 +899,6 @@ const getListType = async (req, res) => {
                 recipe.dataValues.info = recipe.Recipe.dataValues.info;
                 recipe.dataValues.price = recipe.Recipe.dataValues.price;
                 recipe.dataValues.image = recipe.Recipe.dataValues.image;
-                recipe.dataValues.isDel = recipe.Recipe.dataValues.isDel;
                 delete recipe.dataValues.idType;
                 delete recipe.dataValues.Recipe;
             });

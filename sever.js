@@ -72,8 +72,6 @@ async function deleteUnpaidInvoices() {
             if (!invoice) {
                 throw new Error('Invoice not found');
             }
-            let idShop = invoice.idShop;
-            let infoChange = await changeIngredientByInvoice(invoice, idShop, 1, date);
             //console.log(invoice)
             await Invoice.destroy({
                 where: {

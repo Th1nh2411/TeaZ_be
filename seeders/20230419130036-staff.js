@@ -7,17 +7,14 @@ module.exports = {
             {
                 name: 'TranNhatQuan',
                 idAcc: 2,
-                isShare: 1,
             },
             {
                 name: 'Tran Nhat Quan',
                 idAcc: 3,
-                isShare: 1,
             },
             {
                 name: 'Admin',
                 idAcc: 4,
-                isShare: 1,
             },
         ]);
     },

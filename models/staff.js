@@ -26,11 +26,6 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(45),
                 allowNull: false,
             },
-
-            isShare: {
-                allowNull: false,
-                type: DataTypes.INTEGER,
-            },
         },
         {
             sequelize,

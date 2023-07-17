@@ -17,10 +17,10 @@ const { QueryTypes, Op, where, STRING } = require('sequelize');
 const { getIngredientByIdRecipe, changeQuantityIngredientShopWithTransaction } = require('./shop.controllers');
 const moment = require('moment-timezone'); // require
 
-const changeIngredientByIdRecipe = async (idRecipe, quantity, idShop, type, date, idInvoice) => {
+const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvoice) => {
     let infoChange1 = [];
     //console.log(1)
-    let ingredients = await getIngredientByIdRecipe(idRecipe, idShop);
+    let ingredients = await getIngredientByIdRecipe(idRecipe);
     //console.log(ingredients)
     //console.log(2)
     async function processIngredientsRecursive(index) {
@@ -60,7 +60,7 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, idShop, type, date
     //let {isSuccess, infoChange} = await changeQuantityIngredientShopWithTransaction(ingredient, Number(quantity), 1, date, price)
     return infoChange1;
 };
-const changeIngredientByInvoice = async (invoice, idShop, type, date) => {
+const changeIngredientByInvoice = async (invoice, type, date) => {
     let infoChange = [];
     //let quantity = 0
     let cart = await Cart.findAll({
@@ -88,7 +88,7 @@ const changeIngredientByInvoice = async (invoice, idShop, type, date) => {
     for (const item of cart) {
         let idRecipe = Number(item['Cart_products.Product.Recipe.idRecipe']);
         let quantity = Number(item['Cart_products.Product.quantity']) * Number(item['Cart_products.quantity']);
-        let info = await changeIngredientByIdRecipe(idRecipe, quantity, idShop, type, date, invoice.idInvoice);
+        let info = await changeIngredientByIdRecipe(idRecipe, quantity, type, date, invoice.idInvoice);
         infoChange.push(...info);
     }
 
@@ -395,7 +395,6 @@ const getToppingOptions = async (req, res) => {
                 {
                     model: Recipe,
                     attributes: ['name', 'price', 'image'],
-                    where: { isDel: 0 },
                     required: true,
                     include: [
                         {

@@ -23,10 +23,6 @@ module.exports = {
                 references: { model: 'Accounts', key: 'idAcc' },
                 type: Sequelize.INTEGER,
             },
-            isShare: {
-                allowNull: false,
-                type: Sequelize.INTEGER,
-            },
         });
     },
     async down(queryInterface, Sequelize) {
