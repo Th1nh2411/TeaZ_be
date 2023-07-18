@@ -377,6 +377,7 @@ const getToppingOptions = async (req, res) => {
             where: { idRecipe },
             attributes: ['idType'],
         });
+        console.log(detailRecipe);
         if (detailRecipe == '') {
             return res.status(404).json({ error: 'Không tim thấy thông tin sản phẩm' });
         }
@@ -389,15 +390,8 @@ const getToppingOptions = async (req, res) => {
             include: [
                 {
                     model: Recipe,
-                    attributes: ['name', 'price', 'image'],
+                    // attributes: ['name', 'price', 'image'],
                     required: true,
-                    include: [
-                        {
-                            model: Recipe_shop,
-                            where: { isActive: 1 },
-                            required: true,
-                        },
-                    ],
                 },
             ],
             raw: true,
@@ -407,8 +401,8 @@ const getToppingOptions = async (req, res) => {
             return {
                 idRecipe: item['idRecipe'],
                 name: item['Recipe.name'],
-                discount: item['Recipe.Recipe_shops.discount'],
-                isActive: item['Recipe.Recipe_shops.isActive'],
+                discount: item['Recipe.discount'],
+                isActive: item['Recipe.isActive'],
                 price: item['Recipe.price'],
                 image: item['Recipe.image'],
             };

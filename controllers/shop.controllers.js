@@ -1,4 +1,16 @@
-const { Shop, Recipe, Ingredient, Recipe_ingredient, Import, Export } = require('../models');
+const {
+    Shop,
+    Ingredient,
+    Type,
+    Recipe,
+    Recipe_type,
+    Recipe_ingredient,
+    Invoice,
+    Staff,
+    Account,
+    Import,
+    Export,
+} = require('../models');
 const db = require('../models/index');
 const { QueryTypes, Op, where, sequelize } = require('sequelize');
 const moment = require('moment-timezone'); // require
@@ -205,12 +217,12 @@ const menuByTypeForUser = async (req, res) => {
                 where: {
                     isActive: 1,
                 },
-                attributes: ['discount'],
-                include: [
-                    {
-                        model: Recipe,
-                    },
-                ],
+                // attributes: ['discount'],
+                // include: [
+                //     {
+                //         model: Recipe,
+                //     },
+                // ],
             });
         }
 
@@ -349,7 +361,7 @@ const exportIngredient = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi tại exportIngredient' });
     }
 };
-const getListType = async (req, res) => {
+const getListToppingByType = async (req, res) => {
     try {
         let listType = await Type.findAll({
             include: {
@@ -357,7 +369,7 @@ const getListType = async (req, res) => {
                 include: [
                     {
                         model: Recipe,
-                        attributes: ['name', 'info', 'price', 'image'],
+                        // attributes: ['name', 'info', 'price', 'image'],
                     },
                 ],
             },
@@ -369,8 +381,10 @@ const getListType = async (req, res) => {
                 recipe.dataValues.info = recipe.Recipe.dataValues.info;
                 recipe.dataValues.price = recipe.Recipe.dataValues.price;
                 recipe.dataValues.image = recipe.Recipe.dataValues.image;
+                recipe.dataValues.isActive = recipe.Recipe.dataValues.isActive;
+                recipe.dataValues.discount = recipe.Recipe.dataValues.discount;
                 delete recipe.dataValues.idType;
-                delete recipe.dataValues.Recipe;
+                delete recipe.Recipe.dataValues;
             });
             type.dataValues.listToppings = type.dataValues.Recipe_types;
             delete type.dataValues.Recipe_types;
@@ -393,5 +407,5 @@ module.exports = {
     exportIngredient,
     getIngredientByIdRecipe,
     changeQuantityIngredientShopWithTransaction,
-    getListType,
+    getListToppingByType,
 };

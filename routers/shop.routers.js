@@ -10,7 +10,7 @@ const {
     getListIngredientShop,
     importIngredient,
     exportIngredient,
-    getListType,
+    getListToppingByType,
 } = require('../controllers/shop.controllers');
 const { checkExistIngredientShop } = require('../middlewares/validates/checkExist');
 const { authorize } = require('../middlewares/auth/authorize.js');
@@ -19,8 +19,8 @@ const { searchRecipe } = require('../controllers/recipe.controllers');
 
 const shopRouter = express.Router();
 
-shopRouter.get('/getListType', getListType);
 shopRouter.get('/type', menuByTypeForUser);
+shopRouter.get('/getListToppingByType', getListToppingByType);
 shopRouter.get('/searchInShop', searchRecipe);
 shopRouter.get('/info', authenticate, authorize(1), getInfoShop);
 shopRouter.get('/listIngredientShop', authenticate, authorize(1), getListIngredientShop);
