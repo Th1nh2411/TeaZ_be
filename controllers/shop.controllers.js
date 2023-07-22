@@ -33,7 +33,7 @@ const getIngredientByIdRecipe = async (idRecipe) => {
             image: item['Ingredient.image'],
             quantity: item['quantity'],
             unitName: item['Ingredient.unitName'],
-            remainingQuantity: item['Ingredient.Ingredient_shops.quantity'],
+            remainingQuantity: item['Ingredient.quantity'],
         };
     });
     return ingredients;

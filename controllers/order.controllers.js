@@ -12,6 +12,7 @@ const {
     Invoice,
     Recipe_ingredient,
     Ingredient_shop,
+    Ingredient,
 } = require('../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const { getIngredientByIdRecipe, changeQuantityIngredientShopWithTransaction } = require('./shop.controllers');
@@ -30,7 +31,7 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvo
 
         const item = ingredients[index];
         let idIngredient = Number(item['idIngredient']);
-        let ingredient = await Ingredient_shop.findOne({
+        let ingredient = await Ingredient.findOne({
             where: {
                 idIngredient,
             },
@@ -140,16 +141,9 @@ const getToppingOfProduct = async (idProduct) => {
         include: [
             {
                 model: Recipe,
-                attributes: ['price', 'name', 'image'],
+                where: { isActive: 1 },
+                attributes: ['price', 'name', 'image', 'discount'],
                 //required:true,
-                include: [
-                    {
-                        model: Recipe_shop,
-                        where: { isActive: 1 },
-                        required: false,
-                        attributes: ['discount'],
-                    },
-                ],
             },
         ],
         raw: true,
@@ -162,7 +156,7 @@ const getToppingOfProduct = async (idProduct) => {
 
     let shouldEditList = false;
     listTopping = listTopping.filter((item) => {
-        if (item['Recipe.Recipe_shops.discount'] == null) {
+        if (item['Recipe.discount'] == null) {
             shouldEditList = true;
 
             let newItem = {
@@ -175,12 +169,11 @@ const getToppingOfProduct = async (idProduct) => {
 
             return false; // Xóa phần tử khỏi danh sách
         } else {
-            let totalItem = item['Recipe.price'] * item['quantity'] * (item['Recipe.Recipe_shops.discount'] / 100);
+            let totalItem = item['Recipe.price'] * item['quantity'] * (item['Recipe.discount'] / 100);
             totalProduct += totalItem;
             if (item['isMain'] == 1) {
                 return false;
             }
-
             return true; // Giữ lại phần tử trong danh sách
         }
     });
@@ -199,8 +192,7 @@ const getToppingOfProduct = async (idProduct) => {
             quantity: item['quantity'],
             isMain: item['isMain'],
             price: item['Recipe.price'],
-
-            discount: item['Recipe.Recipe_shops.discount'],
+            discount: item['Recipe.discount'],
         };
     });
 
@@ -291,14 +283,8 @@ const getCurrentCartAndTotal = async (user) => {
                         include: [
                             {
                                 model: Recipe,
-                                attributes: ['name', 'image', 'price'],
-                                include: [
-                                    {
-                                        model: Recipe_shop,
-                                        where: { isActive: 1 },
-                                        attributes: ['discount'],
-                                    },
-                                ],
+                                where: { isActive: 1 },
+                                attributes: ['name', 'image', 'price', 'discount'],
                             },
                         ],
                     },
@@ -331,7 +317,7 @@ const getCurrentCartAndTotal = async (user) => {
                 quantityProduct: item['Cart_products.quantity'],
                 image: item['Cart_products.Product.Recipe.image'],
                 price: item['Cart_products.Product.Recipe.price'],
-                discount: item['Cart_products.Product.Recipe.Recipe_shops.discount'],
+                discount: item['Cart_products.Product.Recipe.discount'],
                 listTopping,
                 totalProducts: totalProduct * item['Cart_products.quantity'],
             };
@@ -347,7 +333,7 @@ const getCurrentCartAndTotal = async (user) => {
             quantityProduct: item['Cart_products.quantity'],
             image: item['Cart_products.Product.Recipe.image'],
             price: item['Cart_products.Product.Recipe.price'],
-            discount: item['Cart_products.Product.Recipe.Recipe_shops.discount'],
+            discount: item['Cart_products.Product.Recipe.discount'],
             listTopping,
             totalProducts: totalProduct * item['Cart_products.quantity'],
         };
@@ -359,10 +345,10 @@ const getCurrentCartAndTotal = async (user) => {
             if (item['idProduct'] == null) {
                 return false;
             }
-            listIdProduct += item['idProduct'] + '?';
 
             return false;
         }
+        listIdProduct += item['idProduct'] + '?';
         //if(item['listTopping']=='edit') return false
         return true;
     });
@@ -451,7 +437,7 @@ const addToCart = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
 };
-const editCart = async (req, res) => {
+const delAllItemCart = async (req, res) => {
     try {
         //console.log('test')
         //const idProduct = req.idProduct;
@@ -462,9 +448,9 @@ const editCart = async (req, res) => {
             return res.status(400).json({ isSuccess: false });
         }
         const listId = listIdProduct.split('?');
-        console.log(listId);
+        // console.log(listId);
         for (let i = 0; i < listId.length; i++) {
-            console.log(listId[i]);
+            // console.log(listId[i]);
             //idProduct += listIdRecipe[i] + "," + listQuantity[i] + ";";
             await Cart_product.destroy({
                 where: {
@@ -693,38 +679,29 @@ const createInvoice = async (req, res) => {
         let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
 
         //console.log(listIdProduct)
-        if (listIdProduct != '') {
-            return res.status(400).json({ isSuccess: false });
-        }
-        // console.log('test1')
-        const date = moment().format('YYYY-MM-DD HH:mm:ss');
-        let invoice = await Invoice.create({
-            idCart: currentCart.idCart,
-            idShipping_company,
-            shippingFee,
-            total,
-            date: date,
-            status: 0,
-        });
+        // if (listIdProduct != '') {
+        //     return res.status(400).json({ isSuccess: false });
+        // }
+        console.log('test1');
 
         let idInvoice;
 
         const t = await db.sequelize.transaction(); // Bắt đầu transaction\
         try {
             // console.log('test2')
+            const date = moment().format('YYYY-MM-DD HH:mm:ss');
             let invoice = await Invoice.create(
                 {
                     idCart: currentCart.idCart,
                     idShipping_company,
                     shippingFee,
                     total,
-                    date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                    date: date,
                     status: 0,
                 },
                 { transaction: t },
             );
 
-            const date = moment().format('YYYY-MM-DD HH:mm:ss');
             idInvoice = invoice.idInvoice;
             currentCart.isCurrent = 0;
             let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
@@ -744,6 +721,7 @@ const createInvoice = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
 };
+
 const testInvoice = async (req, res) => {
     try {
         const { idShipping_company, shippingFee } = req.body;
@@ -927,28 +905,28 @@ const searchRecipe = async (req, res) => {
             where: {
                 name: { [Op.like]: `%${name}%` },
             },
-            attributes: ['idRecipe', 'name', 'image', 'price'],
+            attributes: ['idRecipe', 'name', 'image', 'price', 'discount'],
             limit: limit,
             raw: true,
-            include: [
-                {
-                    model: Recipe_shop,
-                    where: { isActive: 1 },
-                    required: true,
-                    attributes: ['discount'],
-                },
-            ],
+            // include: [
+            //     {
+            //         model: Recipe_shop,
+            //         where: { isActive: 1 },
+            //         required: true,
+            //         attributes: ['discount'],
+            //     },
+            // ],
         });
-
-        recipes = recipes.map((item) => {
-            return {
-                idRecipe: item['idRecipe'],
-                name: item['name'],
-                image: item['image'],
-                price: item['price'],
-                discount: item['Recipe_shops.discount'],
-            };
-        });
+        console.log(recipes);
+        // recipes = recipes.map((item) => {
+        //     return {
+        //         idRecipe: item['idRecipe'],
+        //         name: item['name'],
+        //         image: item['image'],
+        //         price: item['price'],
+        //         discount: item['discount'],
+        //     };
+        // });
 
         res.status(200).json({
             recipes,
@@ -961,7 +939,7 @@ const searchRecipe = async (req, res) => {
 module.exports = {
     // getDetailTaiKhoan,
     getToppingOptions,
-    editCart,
+    delAllItemCart,
     addToCart,
     getCurrentCart,
     getShipFee,
