@@ -6,7 +6,6 @@ module.exports = {
         return queryInterface.bulkInsert('Carts', [
             {
                 idUser: 1,
-                isCurrent: 0,
             },
         ]);
     },

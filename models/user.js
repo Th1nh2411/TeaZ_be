@@ -12,8 +12,10 @@ module.exports = (sequelize, DataTypes) => {
             User.belongsTo(models.Account, {
                 foreignKey: 'idAcc',
             });
-
-            User.hasMany(models.Cart, {
+            User.hasOne(models.Cart, {
+                foreignKey: 'idUser',
+            });
+            User.hasMany(models.Invoice, {
                 foreignKey: 'idUser',
             });
         }
@@ -28,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             name: {
                 type: DataTypes.STRING(45),
+                allowNull: false,
+            },
+            mail: {
+                type: DataTypes.STRING(255),
                 allowNull: false,
             },
         },

@@ -12,9 +12,6 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'idUser',
             });
 
-            Cart.hasOne(models.Invoice, {
-                foreignKey: 'idInvoice',
-            });
             Cart.hasMany(models.Cart_product, {
                 foreignKey: 'idCart',
             });
@@ -27,10 +24,6 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 primaryKey: true,
                 type: DataTypes.INTEGER,
-            },
-            isCurrent: {
-                allowNull: false,
-                type: DataTypes.BOOLEAN,
             },
         },
         {

@@ -10,11 +10,11 @@ module.exports = {
                 autoIncrement: true,
                 type: Sequelize.INTEGER,
             },
-            idCart: {
+            idUser: {
                 allowNull: false,
 
                 unique: true,
-                references: { model: 'Carts', key: 'idCart' },
+                references: { model: 'Users', key: 'idUser' },
                 type: Sequelize.INTEGER,
             },
 

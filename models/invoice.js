@@ -11,9 +11,11 @@ module.exports = (sequelize, DataTypes) => {
             Invoice.belongsTo(models.Shipping_company, {
                 foreignKey: 'idShipping_company',
             });
-
-            Invoice.belongsTo(models.Cart, {
-                foreignKey: 'idCart',
+            Invoice.belongsTo(models.User, {
+                foreignKey: 'idUser',
+            });
+            Invoice.hasMany(models.Invoice_product, {
+                foreignKey: 'idInvoice',
             });
         }
     }

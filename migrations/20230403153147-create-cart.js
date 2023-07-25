@@ -16,11 +16,6 @@ module.exports = {
                 references: { model: 'Users', key: 'idUser' },
                 type: Sequelize.INTEGER,
             },
-
-            isCurrent: {
-                allowNull: false,
-                type: Sequelize.BOOLEAN,
-            },
         });
     },
     async down(queryInterface, Sequelize) {

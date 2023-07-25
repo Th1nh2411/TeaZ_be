@@ -1,49 +1,55 @@
 'use strict';
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class Product extends Model {
+    class Invoice_product extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            Product.belongsTo(models.Recipe, {
-                foreignKey: 'idRecipe',
+            // define association here
+            Invoice_product.belongsTo(models.Invoice, {
+                foreignKey: 'idInvoice',
             });
-            Product.hasMany(models.Cart_product, {
-                foreignKey: 'idProduct',
-            });
-            Product.hasMany(models.Invoice_product, {
+            Invoice_product.belongsTo(models.Product, {
                 foreignKey: 'idProduct',
             });
         }
     }
-    Product.init(
+    Invoice_product.init(
         {
-            idProduct: {
+            idInvoice: {
                 allowNull: false,
-
+                references: { model: 'Invoice', key: 'idInvoice' },
                 primaryKey: true,
-                type: DataTypes.STRING,
-            },
-            idRecipe: {
-                allowNull: false,
-
-                primaryKey: true,
-                references: { model: 'Recipe', key: 'idRecipe' },
                 type: DataTypes.INTEGER,
             },
-            isMain: {
+
+            idProduct: {
                 allowNull: false,
-                type: DataTypes.BOOLEAN,
+                primaryKey: true,
+
+                references: { model: 'Product', key: 'idProduct' },
+
+                type: DataTypes.STRING,
+            },
+            size: {
+                allowNull: false,
+                primaryKey: true,
+                type: DataTypes.INTEGER,
+            },
+            quantity: {
+                allowNull: false,
+
+                type: DataTypes.INTEGER,
             },
         },
         {
             sequelize,
-            modelName: 'Product',
+            modelName: 'Invoice_product',
             timestamps: false,
         },
     );
-    return Product;
+    return Invoice_product;
 };
