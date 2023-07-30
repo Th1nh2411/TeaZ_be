@@ -1,4 +1,4 @@
-const { Account, User, Staff } = require('../models');
+const { Account, User } = require('../models');
 const db = require('../models/index');
 const moment = require('moment-timezone'); // require
 
@@ -7,16 +7,14 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 
-const createCustomerWithTransaction = async (phone, password, name) => {
+const createCustomerWithTransaction = async (phone, password, name, mail) => {
     //console.log('test1')
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
 
     let isSuccess;
     try {
-        //console.log('test2')
         const salt = bcrypt.genSaltSync(10);
         const hashPassword = bcrypt.hashSync(password, salt);
-        //console.log('test3')
         const newAccount = await Account.create(
             {
                 phone,
@@ -25,17 +23,17 @@ const createCustomerWithTransaction = async (phone, password, name) => {
             },
             { transaction: t },
         );
-        //console.log('test4')
+
         const newCustomer = await User.create(
             {
                 idAcc: newAccount.idAcc,
                 name,
-                isShare: 1,
+                mail,
             },
             { transaction: t },
         );
 
-        //console.log('test5')
+        // console.log('test5');
         //console.log('test3')
 
         await t.commit(); // Lưu thay đổi và kết thúc transaction
@@ -50,15 +48,15 @@ const createCustomerWithTransaction = async (phone, password, name) => {
 
 const createAccountForCustomer = async (req, res) => {
     try {
-        const { phone, password, name } = req.body;
-        if (phone === '' || password === '' || name === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'addStaff1' });
+        const { phone, password, name, mail } = req.body;
+        if (phone === '' || password === '' || name === '' || mail === '') {
+            return res.status(400).json({ isSuccess: false, mes: 'addUser1' });
         }
-        if (isNaN(phone) || password === undefined || name === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'addStaff2' });
+        if (isNaN(phone) || password === undefined || name === undefined || mail === undefined) {
+            return res.status(400).json({ isSuccess: false, mes: 'addUser2' });
         }
         //tạo ra một chuỗi ngẫu nhiên
-        let isSuccess = await createCustomerWithTransaction(phone, password, name);
+        let isSuccess = await createCustomerWithTransaction(phone, password, name, mail);
 
         res.status(200).json({
             isSuccess,
@@ -81,31 +79,21 @@ const login = async (req, res) => {
         const isAuth = bcrypt.compareSync(password, account.password);
 
         if (isAuth) {
-            let customer;
-            if (account.role == 0) {
-                {
-                    customer = await User.findOne({
-                        where: {
-                            idAcc: account.idAcc,
-                        },
-                    });
-                }
-            } else {
-                customer = await Staff.findOne({
-                    where: {
-                        idAcc: account.idAcc,
-                    },
-                });
-            }
+            let userInfo;
+            userInfo = await User.findOne({
+                where: {
+                    idAcc: account.idAcc,
+                },
+            });
 
             const token = jwt.sign({ phone: account.phone }, 'hehehe', {
                 expiresIn: 30 * 60 * 60 * 60,
             });
-            customer.dataValues.phone = phone;
-            customer.dataValues.role = account.role;
+            userInfo.dataValues.phone = phone;
+            userInfo.dataValues.role = account.role;
 
             res.status(200).json({
-                customer,
+                userInfo,
                 isSuccess: true,
 
                 token,

@@ -20,9 +20,9 @@ accountRouter.post('/login', checkExistAccount(), login);
 //accountRouter.post("/admin/login", checkExistAccount(Account), loginAdmin);
 //accountRouter.get("/logout", authenticate, logout);
 accountRouter.post('/create', checkNotExistAcount(), createAccountForCustomer);
-//accountRouter.post("/forgotpassword", checkExistAccount(Account), forgotPassword);
-//accountRouter.post("/forgotpassword/verify", checkExistAccount(Account), verify);
-//accountRouter.post("/forgotpassword/verify/success", checkExistAccount(Account), accessForgotPassword);
+accountRouter.post('/forgotpassword', checkExistAccount(), forgotPassword);
+accountRouter.post('/forgotpassword/verify', checkExistAccount(), verify);
+accountRouter.post('/forgotpassword/verify/success', checkExistAccount(), accessForgotPassword);
 //accountRouter.put("/changepassword", authenticate, changePassword);
 
 module.exports = {

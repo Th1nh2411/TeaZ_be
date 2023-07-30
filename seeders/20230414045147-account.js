@@ -24,12 +24,6 @@ module.exports = {
                 role: 2,
                 //admin
             },
-            {
-                phone: '0868466700',
-                password: '$2a$10$pVN6f.l9WXqsQxifG89kTOewLKmN6BxXjFoqIUra5MIBcc6Z8yhtW',
-                forgot: 0,
-                role: 0,
-            },
         ]);
     },
 

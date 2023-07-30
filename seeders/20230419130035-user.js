@@ -19,11 +19,6 @@ module.exports = {
                 name: 'Admin',
                 idAcc: 3,
             },
-            {
-                mail: 'rinktvn2525@gmail.com',
-                name: 'Tran Nhat Quan',
-                idAcc: 4,
-            },
         ]);
     },
 
