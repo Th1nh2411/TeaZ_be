@@ -9,6 +9,7 @@ const {
     Shop,
     Ingredient,
     Recipe,
+    User,
 } = require('../../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const createProduct = async (idProduct) => {
@@ -67,22 +68,22 @@ const checkExistAccount = () => {
         try {
             //console.log(1)
             //const staff = req.staff
-            const { phone } = req.body;
+            const { username } = req.body;
             console.log(req.body);
-            if (phone === '') {
+            if (username === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
             }
-            if (isNaN(phone)) {
+            if (username === undefined) {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc2' });
             }
 
             const account = await Account.findOne({
                 where: {
-                    phone,
+                    [Op.or]: [{ phone: username }, { mail: username }],
                 },
             });
 
-            //console.log(created)
+            console.log(account);
             if (!account) {
                 return res.status(404).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
             } else {
@@ -420,9 +421,9 @@ const checkNotExistAcount = () => {
         try {
             console.log(1);
             //const staff = req.staff
-            const { phone } = req.body;
+            const { phone, mail } = req.body;
 
-            if (phone === '') {
+            if (phone === '' || mail === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
             }
             if (isNaN(phone)) {
@@ -431,7 +432,7 @@ const checkNotExistAcount = () => {
 
             const account = await Account.findOne({
                 where: {
-                    phone,
+                    [Op.or]: [{ phone: phone }, { mail: mail }],
                 },
             });
 

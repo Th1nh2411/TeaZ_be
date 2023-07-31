@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
             Recipe.hasMany(models.Product, {
                 foreignKey: 'idRecipe',
             });
+            Recipe.hasOne(models.Recipe_history, {
+                foreignKey: 'idRecipe',
+            });
 
             Recipe.belongsTo(models.Type, {
                 foreignKey: 'idType',
@@ -38,10 +41,6 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
-            price: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
 
             image: {
                 type: DataTypes.TEXT,
@@ -51,14 +50,6 @@ module.exports = (sequelize, DataTypes) => {
             isActive: {
                 allowNull: false,
                 type: DataTypes.BOOLEAN,
-            },
-            discount: {
-                allowNull: false,
-                type: DataTypes.INTEGER,
-            },
-            quantity: {
-                allowNull: false,
-                type: DataTypes.INTEGER,
             },
         },
         {

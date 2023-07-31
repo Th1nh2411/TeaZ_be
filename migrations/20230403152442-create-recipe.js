@@ -18,10 +18,6 @@ module.exports = {
                 type: Sequelize.TEXT,
                 allowNull: true,
             },
-            price: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-            },
 
             idType: {
                 type: Sequelize.INTEGER,
@@ -37,14 +33,6 @@ module.exports = {
             isActive: {
                 allowNull: false,
                 type: Sequelize.BOOLEAN,
-            },
-            discount: {
-                allowNull: false,
-                type: Sequelize.INTEGER,
-            },
-            quantity: {
-                allowNull: false,
-                type: Sequelize.INTEGER,
             },
         });
     },

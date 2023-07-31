@@ -17,6 +17,7 @@ const createCustomerWithTransaction = async (phone, password, name, mail) => {
         const hashPassword = bcrypt.hashSync(password, salt);
         const newAccount = await Account.create(
             {
+                mail,
                 phone,
                 role: 0,
                 password: hashPassword,
@@ -28,7 +29,6 @@ const createCustomerWithTransaction = async (phone, password, name, mail) => {
             {
                 idAcc: newAccount.idAcc,
                 name,
-                mail,
             },
             { transaction: t },
         );
@@ -165,7 +165,7 @@ const logout = async (req, res, next) => {
 };
 
 const forgotPassword = async (req, res) => {
-    const { mail } = req.body;
+    const account = req.account;
     try {
         const randomID = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000);
         const isExist1 = await Account.findOne({
@@ -179,11 +179,11 @@ const forgotPassword = async (req, res) => {
                 isSuccess: false,
             });
         } else {
-            await Account.sequelize.query('UPDATE accounts SET forgot = :randomID WHERE mail = :mail', {
+            await Account.sequelize.query('UPDATE accounts SET forgot = :randomID WHERE idAcc = :idAcc', {
                 type: QueryTypes.UPDATE,
                 replacements: {
                     randomID: randomID,
-                    mail: mail,
+                    idAcc: account.idAcc,
                 },
             });
             let transporter = nodemailer.createTransport({
@@ -191,35 +191,36 @@ const forgotPassword = async (req, res) => {
                 port: 587,
                 secure: false, // true for 465, false for other ports
                 auth: {
-                    user: 'n19dccn107@student.ptithcm.edu.vn', // generated ethereal user
-                    pass: 'bqztpfkmmbpzmdxl', // generated ethereal password
+                    user: 'n19dccn196@student.ptithcm.edu.vn', // generated ethereal user
+                    pass: 'oqrkvehhclgnbzjf', // generated ethereal password
                 },
             });
+            console.log(3);
             // send mail with defined transport object
             await transporter.sendMail({
-                from: 'n19dccn107@student.ptithcm.edu.vn', // sender address
-                to: `${mail}`, // list of receivers
+                from: 'n19dccn196@student.ptithcm.edu.vn', // sender address
+                to: `${account.mail}`, // list of receivers
                 subject: 'FORGOT PASSWORD', // Subject line
                 text: 'FORGOT PASSWORD', // plain text body
-                html: `Mã xác nhận của bạn là: ${randomID}`, // html body
+                html: `<p>Mã xác nhận của bạn là: ${randomID}</p>`, // html body
             });
 
             return res.status(200).json({
                 isExist: true,
                 isSuccess: true,
-                message: `Mã xác minh đã được gửi về email: ${mail} vui lòng kiểm tra hòm thư!`,
+                message: `Mã xác minh đã được gửi về email: ${account.mail} vui lòng kiểm tra hòm thư!`,
             });
         }
     } catch (error) {
         res.status(500).json({
-            isExist: true,
             isSuccess: false,
         });
     }
 };
 
 const verify = async (req, res, next) => {
-    const { verifyID, mail } = req.body;
+    const { verifyID } = req.body;
+    const mail = req.account.mail;
     const account = await Account.findOne({
         where: {
             forgot: verifyID,
@@ -241,7 +242,8 @@ const verify = async (req, res, next) => {
 };
 
 const accessForgotPassword = async (req, res, next) => {
-    const { mail, password, repeatPassword } = req.body;
+    const { password, repeatPassword } = req.body;
+    const mail = req.account.mail;
     if (password != repeatPassword) {
         res.status(400).json({
             message: `Mật khẩu lặp lại không chính xác!`,

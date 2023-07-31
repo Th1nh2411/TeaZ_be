@@ -22,7 +22,7 @@ accountRouter.post('/login', checkExistAccount(), login);
 accountRouter.post('/create', checkNotExistAcount(), createAccountForCustomer);
 accountRouter.post('/forgotpassword', checkExistAccount(), forgotPassword);
 accountRouter.post('/forgotpassword/verify', checkExistAccount(), verify);
-accountRouter.post('/forgotpassword/verify/success', checkExistAccount(), accessForgotPassword);
+accountRouter.post('/forgotpassword/changePw', checkExistAccount(), accessForgotPassword);
 //accountRouter.put("/changepassword", authenticate, changePassword);
 
 module.exports = {
