@@ -10,6 +10,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 20,
+                discount: 90,
             },
             {
                 name: 'Trà sữa trân châu đường đen',
@@ -17,6 +19,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 25,
+                discount: 100,
             },
             {
                 name: 'Trà sữa panda',
@@ -24,6 +28,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 22,
+                discount: 85,
             },
             {
                 name: 'Trà sữa matcha',
@@ -31,6 +37,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 20,
+                discount: 100,
             },
             {
                 name: 'Trà sữa Berry Berry',
@@ -38,6 +46,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 30,
+                discount: 90,
             },
             {
                 name: 'Latte',
@@ -45,6 +55,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 32,
+                discount: 90,
             },
             {
                 name: 'Hồng trà sữa',
@@ -52,6 +64,8 @@ module.exports = {
                 idType: 1,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 15,
+                discount: 80,
             },
             {
                 name: 'Trân châu đen',
@@ -59,6 +73,8 @@ module.exports = {
                 idType: 5,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 5,
+                discount: 80,
             },
             {
                 name: 'Trân châu trắng',
@@ -66,6 +82,8 @@ module.exports = {
                 idType: 5,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 5,
+                discount: 90,
             },
 
             {
@@ -74,6 +92,8 @@ module.exports = {
                 idType: 5,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
+                price: 10,
+                discount: 90,
             },
         ]);
     },

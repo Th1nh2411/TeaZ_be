@@ -34,6 +34,12 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.BOOLEAN,
             },
+            price: {
+                type: Sequelize.INTEGER,
+            },
+            discount: {
+                type: Sequelize.INTEGER,
+            },
         });
     },
     async down(queryInterface, Sequelize) {

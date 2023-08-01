@@ -2,7 +2,7 @@ const { raw, text } = require('body-parser');
 const db = require('../models/index');
 const {
     Shop,
-    Recipe_history,
+    Recipe_shop,
     Recipe,
     Recipe_type,
     Cart,
@@ -900,45 +900,36 @@ const searchRecipe = async (req, res) => {
 
         const name = req.query.name;
         const limit = Number(req.query.limit);
-        const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
+
         let recipes = await Recipe.findAll({
             where: {
                 name: { [Op.like]: `%${name}%` },
             },
-            attributes: ['idRecipe', 'name', 'image'],
-            include: [
-                {
-                    model: Recipe_history,
-                    where: { date: { [Op.lte]: currentDate } },
-                    attributes: ['price', 'discount', 'date'],
-                },
-            ],
-
-            order: [
-                [Recipe_history, 'idRecipe', 'ASC'],
-                [Recipe_history, 'date', 'DESC'],
-            ],
+            attributes: ['idRecipe', 'name', 'image', 'price', 'discount'],
             limit: limit,
-            // raw: true,
+            raw: true,
+            // include: [
+            //     {
+            //         model: Recipe_shop,
+            //         where: { isActive: 1 },
+            //         required: true,
+            //         attributes: ['discount'],
+            //     },
+            // ],
         });
+        console.log(recipes);
+        // recipes = recipes.map((item) => {
+        //     return {
+        //         idRecipe: item['idRecipe'],
+        //         name: item['name'],
+        //         image: item['image'],
+        //         price: item['price'],
+        //         discount: item['discount'],
+        //     };
+        // });
 
-        // Lọc các phần tử trùng id, lấy phần tử có date gần nhất
-        const finalRecipes = Object.values(
-            recipes.reduce((acc, recipe) => {
-                acc[recipe.idRecipe] = acc[recipe.idRecipe] || recipe;
-                return acc;
-            }, {}),
-        );
         res.status(200).json({
-            recipes: finalRecipes.map((item) => {
-                return {
-                    idRecipe: item['idRecipe'],
-                    name: item['name'],
-                    image: item['image'],
-                    price: item.Recipe_history['price'],
-                    discount: item.Recipe_history['discount'],
-                };
-            }),
+            recipes,
             isSuccess: true,
         });
     } catch (error) {
