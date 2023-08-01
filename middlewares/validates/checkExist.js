@@ -17,6 +17,7 @@ const createProduct = async (idProduct) => {
     recipeList = recipeList.split(','); // Tách các  idRecipe
     let createdProducts = [];
     // Duyệt qua từng cặp idRecipe
+    // console.log(recipeList);
     for (let i = 0; i < recipeList.length; i++) {
         const productData = recipeList[i];
 
@@ -226,13 +227,11 @@ const checkExistProduct = () => {
 
             // Loại bỏ dấu phẩy cuối cùng
             idProduct = idProduct.slice(0, -1);
-            console.log(idProduct);
             let listProduct = await Product.findAll({
                 where: {
                     idProduct,
                 },
             });
-            //console.log(product.length)
             if (listProduct.length !== 0) {
                 //req.listProduct = listProduct
                 req.idProduct = idProduct;
@@ -259,7 +258,6 @@ const checkExistCurrentCart = () => {
             let [currentCart, created] = await Cart.findOrCreate({
                 where: {
                     idUser: user.idUser,
-                    isCurrent: 1,
                 },
             });
             //console.log(currentCart)

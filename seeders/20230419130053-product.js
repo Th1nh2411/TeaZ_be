@@ -3,28 +3,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        return queryInterface.bulkInsert('Products', [
-            {
-                idProduct: '1,1;7,1;9,1;10,1',
-                idRecipe: 1,
-                isMain: 1,
-            },
-            {
-                idProduct: '1,1;7,1;9,1;10,1',
-                idRecipe: 7,
-                isMain: 0,
-            },
-            {
-                idProduct: '1,1;7,1;9,1;10,1',
-                idRecipe: 9,
-                isMain: 0,
-            },
-            {
-                idProduct: '1,1;7,1;9,1;10,1',
-                idRecipe: 10,
-                isMain: 0,
-            },
-        ]);
+        // return queryInterface.bulkInsert('Products', [
+        //     {
+        //         idProduct: '1',
+        //         idRecipe: 1,
+        //         isMain: 1,
+        //     },
+        // ]);
     },
 
     async down(queryInterface, Sequelize) {

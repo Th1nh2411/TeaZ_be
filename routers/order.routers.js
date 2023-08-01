@@ -36,16 +36,7 @@ const orderRouter = express.Router();
 orderRouter.get('/topping', getToppingOptions);
 orderRouter.get('/search', searchRecipe);
 orderRouter.get('/currentCart', authenticate, authorize(0), getCurrentCart);
-orderRouter.post('/addToCart', authenticate, authorize(0), checkExistProduct(), checkExistCurrentCart(), addToCart);
-orderRouter.delete('/deleteProductCart', authenticate, authorize(0), checkExistCurrentCart(), delAllItemCart);
-orderRouter.delete(
-    '/deleteProductCart/:oldIdProduct',
-    authenticate,
-    authorize(0),
-    checkExistCurrentCart(),
-    checkExistProductCartAndDel(),
-    confirmDeleteProductCart,
-);
+orderRouter.post('/addToCart', authenticate, authorize(0), checkExistCurrentCart(), checkExistProduct(), addToCart);
 orderRouter.post(
     '/editProductCart/:oldIdProduct',
     authenticate,
@@ -55,6 +46,17 @@ orderRouter.post(
     checkExistProductCartAndDel(),
     addToCart,
 );
+orderRouter.delete(
+    '/deleteProductCart/:oldIdProduct',
+    authenticate,
+    authorize(0),
+    checkExistCurrentCart(),
+    checkExistProductCartAndDel(),
+    confirmDeleteProductCart,
+);
+
+orderRouter.delete('/deleteProductCart', authenticate, authorize(0), checkExistCurrentCart(), delAllItemCart);
+
 orderRouter.get('/getShipFee', getShipFee);
 orderRouter.get('/getCurrentInvoice', authenticate, authorize(0), getCurrentInvoice);
 orderRouter.get('/getAllInvoice', authenticate, authorize(0), getAllInvoiceUser);

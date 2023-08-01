@@ -160,7 +160,6 @@ const getToppingOfProduct = async (idProduct) => {
             return false; // Xóa phần tử khỏi danh sách
         } else {
             let totalItem = item['Recipe.price'] * (item['Recipe.discount'] / 100);
-            console.log(totalItem);
             toppingCost += totalItem;
             return true; // Giữ lại phần tử trong danh sách
         }
@@ -278,12 +277,12 @@ const getCurrentCartAndTotal = async (user) => {
         raw: true,
     });
     let total = 0;
-    let nameSet = new Set();
-    let listIdProduct = '';
 
     const promises = cart.map(async (item) => {
         let { listTopping, toppingCost, edit } = await getToppingOfProduct(item['Cart_products.idProduct']);
-        const totalProducts = toppingCost + item['Cart_products.Product.Recipe.price'] * item['Cart_products.quantity'];
+        const mainCost =
+            item['Cart_products.Product.Recipe.price'] * (item['Cart_products.Product.Recipe.discount'] / 100);
+        const totalProducts = (toppingCost + mainCost + item['Cart_products.size']) * item['Cart_products.quantity'];
         total += totalProducts;
         if (edit == 'true') {
             return {
@@ -323,12 +322,11 @@ const getCurrentCartAndTotal = async (user) => {
 
             return false;
         }
-        listIdProduct += item['idProduct'] + '?';
         //if(item['listTopping']=='edit') return false
         return true;
     });
     //mess =  Array.from(new Set(mess))
-    return { cart, total, listIdProduct };
+    return { cart, total };
 };
 const getToppingOptions = async (req, res) => {
     try {
@@ -381,6 +379,7 @@ const addToCart = async (req, res) => {
         const idProduct = req.idProduct;
         const { quantityProduct, sizeProduct } = req.body;
         const currentCart = req.currentCart;
+
         if (quantityProduct === '') {
             return res.status(400).json({ isSuccess: false });
         }
@@ -416,24 +415,15 @@ const delAllItemCart = async (req, res) => {
     try {
         //console.log('test')
         //const idProduct = req.idProduct;
-        const { listIdProduct } = req.body;
-        console.log(listIdProduct);
         const currentCart = req.currentCart;
-        if (listIdProduct == '') {
-            return res.status(400).json({ isSuccess: false });
-        }
-        const listId = listIdProduct.split('?');
-        // console.log(listId);
-        for (let i = 0; i < listId.length; i++) {
-            // console.log(listId[i]);
-            //idProduct += listIdRecipe[i] + "," + listQuantity[i] + ";";
-            await Cart_product.destroy({
-                where: {
-                    idProduct: listId[i],
-                    idCart: currentCart.idCart,
-                },
-            });
-        }
+
+        console.log(currentCart.idCart);
+        await Cart_product.destroy({
+            where: {
+                idCart: currentCart.idCart,
+            },
+        });
+        console.log(2);
 
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
@@ -523,11 +513,10 @@ const getCurrentCart = async (req, res) => {
     try {
         const user = req.user;
 
-        let { cart, total, listIdProduct } = await getCurrentCartAndTotal(user);
+        let { cart, total } = await getCurrentCartAndTotal(user);
         //console.log(listTopping)
-        listIdProduct = listIdProduct.slice(0, -1);
 
-        return res.status(200).json({ isSuccess: true, listIdProduct, cart, total });
+        return res.status(200).json({ isSuccess: true, cart, total });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
@@ -651,12 +640,8 @@ const createInvoice = async (req, res) => {
         //console.log(idShipping_company)
         const user = req.user;
         const currentCart = req.currentCart;
-        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
+        let { cart, total, mess } = await getCurrentCartAndTotal(user);
 
-        //console.log(listIdProduct)
-        // if (listIdProduct != '') {
-        //     return res.status(400).json({ isSuccess: false });
-        // }
         console.log('test1');
 
         let idInvoice;
@@ -709,12 +694,8 @@ const testInvoice = async (req, res) => {
         //console.log(idShipping_company)
         const user = req.user;
         const currentCart = req.currentCart;
-        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
+        let { cart, total, mess } = await getCurrentCartAndTotal(user);
 
-        //console.log(listIdProduct)
-        if (listIdProduct != '') {
-            return res.status(400).json({ isSuccess: false });
-        }
         const t = await db.sequelize.transaction(); // Bắt đầu transaction\
         try {
             // console.log('test2')
