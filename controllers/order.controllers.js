@@ -136,8 +136,9 @@ const getToppingOfProduct = async (idProduct) => {
     let listTopping = await Product.findAll({
         where: {
             idProduct: idProduct,
+            isMain: 0,
         },
-        attributes: ['idRecipe', 'quantity', 'isMain'],
+        attributes: ['idRecipe'],
         include: [
             {
                 model: Recipe,
@@ -149,35 +150,21 @@ const getToppingOfProduct = async (idProduct) => {
         raw: true,
     });
     //console.log(listTopping)
-    let totalProduct = 0;
+    let toppingCost = 0;
     //console.log(listTopping)
-    let mes = [];
-    //let log =''
 
     let shouldEditList = false;
     listTopping = listTopping.filter((item) => {
         if (item['Recipe.discount'] == null) {
             shouldEditList = true;
-
-            let newItem = {
-                name: '' + item['Recipe.name'],
-                image: '' + item['Recipe.image'],
-                //idProduct
-            };
-            //og+=item['Recipe.name']
-            mes.push(newItem); // Đổ đối tượng mới vào danh sách mới
-
             return false; // Xóa phần tử khỏi danh sách
         } else {
-            let totalItem = item['Recipe.price'] * item['quantity'] * (item['Recipe.discount'] / 100);
-            totalProduct += totalItem;
-            if (item['isMain'] == 1) {
-                return false;
-            }
+            let totalItem = item['Recipe.price'] * (item['Recipe.discount'] / 100);
+            console.log(totalItem);
+            toppingCost += totalItem;
             return true; // Giữ lại phần tử trong danh sách
         }
     });
-
     let edit = 'false';
     if (shouldEditList == true) {
         listTopping = [];
@@ -189,14 +176,13 @@ const getToppingOfProduct = async (idProduct) => {
         return {
             idRecipe: item['idRecipe'],
             name: item['Recipe.name'],
-            quantity: item['quantity'],
             isMain: item['isMain'],
             price: item['Recipe.price'],
             discount: item['Recipe.discount'],
         };
     });
 
-    return { listTopping, totalProduct, mes, edit };
+    return { listTopping, toppingCost, edit };
 };
 const getDetailCart = async (idCart) => {
     let cart = await Cart.findAll({
@@ -266,7 +252,6 @@ const getCurrentCartAndTotal = async (user) => {
     let cart = await Cart.findAll({
         where: {
             idUser: user.idUser,
-            isCurrent: 1,
         },
 
         include: [
@@ -279,7 +264,6 @@ const getCurrentCartAndTotal = async (user) => {
                         model: Product,
                         required: false,
                         where: { isMain: 1 },
-                        attributes: ['quantity'],
                         include: [
                             {
                                 model: Recipe,
@@ -292,22 +276,15 @@ const getCurrentCartAndTotal = async (user) => {
             },
         ],
         raw: true,
-        //nest:true,
     });
     let total = 0;
-    let mess = [];
     let nameSet = new Set();
     let listIdProduct = '';
 
     const promises = cart.map(async (item) => {
-        let { listTopping, totalProduct, mes, edit } = await getToppingOfProduct(item['Cart_products.idProduct']);
-
-        mes.forEach((item1) => {
-            if (!nameSet.has(item1.name)) {
-                nameSet.add(item1.name);
-                mess.push(item1);
-            }
-        });
+        let { listTopping, toppingCost, edit } = await getToppingOfProduct(item['Cart_products.idProduct']);
+        const totalProducts = toppingCost + item['Cart_products.Product.Recipe.price'] * item['Cart_products.quantity'];
+        total += totalProducts;
         if (edit == 'true') {
             return {
                 idCart: item['idCart'],
@@ -319,11 +296,9 @@ const getCurrentCartAndTotal = async (user) => {
                 price: item['Cart_products.Product.Recipe.price'],
                 discount: item['Cart_products.Product.Recipe.discount'],
                 listTopping,
-                totalProducts: totalProduct * item['Cart_products.quantity'],
+                totalProducts,
             };
         }
-
-        total += totalProduct * item['Cart_products.quantity'];
 
         return {
             idCart: item['idCart'],
@@ -335,7 +310,7 @@ const getCurrentCartAndTotal = async (user) => {
             price: item['Cart_products.Product.Recipe.price'],
             discount: item['Cart_products.Product.Recipe.discount'],
             listTopping,
-            totalProducts: totalProduct * item['Cart_products.quantity'],
+            totalProducts,
         };
     });
 
@@ -353,7 +328,7 @@ const getCurrentCartAndTotal = async (user) => {
         return true;
     });
     //mess =  Array.from(new Set(mess))
-    return { cart, total, mess, listIdProduct };
+    return { cart, total, listIdProduct };
 };
 const getToppingOptions = async (req, res) => {
     try {
@@ -548,11 +523,11 @@ const getCurrentCart = async (req, res) => {
     try {
         const user = req.user;
 
-        let { cart, total, mess, listIdProduct } = await getCurrentCartAndTotal(user);
+        let { cart, total, listIdProduct } = await getCurrentCartAndTotal(user);
         //console.log(listTopping)
         listIdProduct = listIdProduct.slice(0, -1);
 
-        return res.status(200).json({ isSuccess: true, listIdProduct, mess, cart, total });
+        return res.status(200).json({ isSuccess: true, listIdProduct, cart, total });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }

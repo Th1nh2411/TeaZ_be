@@ -13,23 +13,21 @@ const {
 } = require('../../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const createProduct = async (idProduct) => {
-    let productList = idProduct.substring(1);
-    productList = productList.split(';'); // Tách các cặp idRecipe và quantity
+    let recipeList = idProduct.substring(1);
+    recipeList = recipeList.split(','); // Tách các  idRecipe
     let createdProducts = [];
-    // Duyệt qua từng cặp idRecipe và quantity
-    for (let i = 0; i < productList.length; i++) {
-        const productData = productList[i].split(','); // Tách idRecipe và quantity
+    // Duyệt qua từng cặp idRecipe
+    for (let i = 0; i < recipeList.length; i++) {
+        const productData = recipeList[i];
 
         const idRecipe = productData[0];
-        const quantity = productData[1];
 
-        const isMain = i === 0 ? 1 : 0; // Thiết lập isMain
+        const isMain = i === 0 ? 1 : 0; // Thiết lập id đầu là isMain
 
         // Tạo bản ghi trong bảng "product" với các giá trị tương ứng
         const createdProduct = await Product.create({
             idProduct: idProduct,
             idRecipe: idRecipe,
-            quantity: quantity,
             isMain: isMain,
         });
         createdProducts.push(createdProduct);
@@ -210,25 +208,23 @@ const checkExistIngredientAndRecipe = () => {
 const checkExistProduct = () => {
     return async (req, res, next) => {
         try {
-            const { idRecipe, quantity } = req.body;
+            const { idRecipe, sizeProduct } = req.body;
             //console.log(idRecipe)
-            if (idRecipe === '' || quantity === '') {
+            if (idRecipe === '') {
                 return res.status(400).json({ isSuccess: false });
             }
             //console.log('test')
             const listIdRecipe = idRecipe.split(',').map(Number);
-            const listQuantity = quantity.split(',').map(Number);
-            const { sizeProduct } = req.body;
             let idProduct = '';
             if (sizeProduct != 0) {
                 idProduct += 'L';
             } else idProduct += 'M';
 
             for (let i = 0; i < listIdRecipe.length; i++) {
-                idProduct += listIdRecipe[i] + ',' + listQuantity[i] + ';';
+                idProduct += listIdRecipe[i] + ',';
             }
 
-            // Loại bỏ dấu chấm phẩy cuối cùng
+            // Loại bỏ dấu phẩy cuối cùng
             idProduct = idProduct.slice(0, -1);
             console.log(idProduct);
             let listProduct = await Product.findAll({
@@ -238,12 +234,10 @@ const checkExistProduct = () => {
             });
             //console.log(product.length)
             if (listProduct.length !== 0) {
-                console.log('if');
                 //req.listProduct = listProduct
                 req.idProduct = idProduct;
                 next();
             } else {
-                console.log('else');
                 listProduct = await createProduct(idProduct);
                 req.idProduct = idProduct;
                 //console.log(listProduct)
