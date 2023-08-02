@@ -38,10 +38,8 @@ const getIngredientByIdRecipe = async (idRecipe) => {
     });
     return ingredients;
 };
-const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity, type = 1, date, price = 0) => {
+const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity, type = 1, date, price = 0, t) => {
     //console.log('test1')
-    const t = await db.sequelize.transaction(); // Bắt đầu transaction
-    //console.log('testn')
     let isSuccess;
     let runOut = false;
     let infoChange;
@@ -86,7 +84,6 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
             await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction
         }
 
-        await t.commit(); // Lưu thay đổi và kết thúc transaction
         isSuccess = true;
     } catch (error) {
         isSuccess = false;
@@ -311,6 +308,7 @@ const editInfoShop = async (req, res) => {
 };
 const importIngredient = async (req, res) => {
     try {
+        const t = await db.sequelize.transaction(); // Bắt đầu transaction
         const staff = req.staff;
         const ingredient = req.ingredient;
         const { price, quantity } = req.body;
@@ -330,8 +328,9 @@ const importIngredient = async (req, res) => {
             1,
             date,
             price,
+            t,
         );
-
+        await t.commit();
         return res.status(200).json({ isSuccess, ingredient, infoChange });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi tại importIngredient' });
@@ -339,6 +338,7 @@ const importIngredient = async (req, res) => {
 };
 const exportIngredient = async (req, res) => {
     try {
+        const t = await db.sequelize.transaction(); // Bắt đầu transaction
         const staff = req.staff;
         const ingredient = req.ingredient;
         const { info, quantity } = req.body;
@@ -358,7 +358,9 @@ const exportIngredient = async (req, res) => {
             0,
             date,
             info,
+            t,
         );
+        t.commit();
         if (!isSuccess) return res.status(500).json({ error: 'Đã xảy ra lỗi tại exportIngredient' });
 
         return res.status(200).json({ isSuccess, ingredient, infoChange });

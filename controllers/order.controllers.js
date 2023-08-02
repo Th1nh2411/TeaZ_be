@@ -2,7 +2,7 @@ const { raw, text } = require('body-parser');
 const db = require('../models/index');
 const {
     Shop,
-    Recipe_shop,
+
     Recipe,
     Recipe_type,
     Cart,
@@ -11,7 +11,7 @@ const {
     Shipping_company,
     Invoice,
     Recipe_ingredient,
-    Ingredient_shop,
+    Invoice_product,
     Ingredient,
 } = require('../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
@@ -21,9 +21,11 @@ const moment = require('moment-timezone'); // require
 const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvoice) => {
     let infoChange1 = [];
     //console.log(1)
+    const t = await db.sequelize.transaction(); // Bắt đầu transaction
     let ingredients = await getIngredientByIdRecipe(idRecipe);
     async function processIngredientsRecursive(index) {
         if (index >= ingredients.length) {
+            await t.commit(); // Lưu thay đổi và kết thúc transaction
             return; // Kết thúc đệ quy khi đã xử lý hết tất cả các phần tử
         }
 
@@ -47,8 +49,8 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvo
             type,
             date,
             price,
+            t,
         );
-
         // Gọi đệ quy để xử lý vòng lặp tiếp theo
         await processIngredientsRecursive(index + 1);
     }
@@ -643,13 +645,27 @@ const createInvoice = async (req, res) => {
                 },
                 { transaction: t },
             );
-            console.log(1);
+            let listCartProduct = await Cart_product.findAll({
+                where: { idCart: currentCart.idCart },
+            });
             idInvoice = invoice.idInvoice;
-            // currentCart.isCurrent = 0;
+            listCartProduct.forEach(async (item, index) => {
+                await Invoice_product.create(
+                    {
+                        idInvoice,
+                        idProduct: item.idProduct,
+                        size: item.size,
+                        quantity: item.quantity,
+                    },
+                    { transaction: t },
+                );
+            });
+            console.log(1);
             let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
+            console.log(2);
+            await Cart_product.destroy({ where: { idCart: currentCart.idCart }, transaction: t });
+            console.log(3);
             await currentCart.destroy({ transaction: t });
-            console.log(currentCart);
-            //await invoice.destroy()
 
             await t.commit(); // Lưu thay đổi và kết thúc transaction
             isSuccess = true;
