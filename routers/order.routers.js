@@ -19,7 +19,6 @@ const {
     getAllOrderInTransit,
     getAllInvoiceByDate,
     searchRecipe,
-    testInvoice,
 } = require('../controllers/order.controllers');
 const {
     checkExistProduct,
@@ -35,7 +34,7 @@ const orderRouter = express.Router();
 // Customer
 orderRouter.get('/topping', getToppingOptions);
 orderRouter.get('/search', searchRecipe);
-orderRouter.get('/currentCart', authenticate, authorize(0), getCurrentCart);
+orderRouter.get('/currentCart', authenticate, authorize(0), checkExistCurrentCart(), getCurrentCart);
 orderRouter.post('/addToCart', authenticate, authorize(0), checkExistCurrentCart(), checkExistProduct(), addToCart);
 orderRouter.post(
     '/editProductCart/:oldIdProduct',
@@ -61,7 +60,6 @@ orderRouter.get('/getShipFee', getShipFee);
 orderRouter.get('/getCurrentInvoice', authenticate, authorize(0), getCurrentInvoice);
 orderRouter.get('/getAllInvoice', authenticate, authorize(0), getAllInvoiceUser);
 orderRouter.get('/getDetailInvoice/:idInvoice', authenticate, authorize(0), getDetailInvoice);
-orderRouter.delete('/cancelInvoice', authenticate, authorize(0), cancelInvoice);
 orderRouter.post(
     '/createInvoice',
     authenticate,
@@ -70,15 +68,9 @@ orderRouter.post(
     checkExistInvoiceLessThan3(),
     createInvoice,
 );
-orderRouter.post(
-    '/testInvoice',
-    authenticate,
-    authorize(0),
-    checkExistCurrentCart(),
-    checkExistInvoiceLessThan3(),
-    testInvoice,
-);
+
 orderRouter.put('/confirmInvoice', authenticate, authorize(0), checkExistInvoiceStatus(0), confirmInvoice);
+orderRouter.delete('/cancelInvoice', authenticate, authorize(0), cancelInvoice);
 // Manage
 orderRouter.get('/getAllOrder', authenticate, authorize(1), getAllOrder);
 orderRouter.get('/getAllOrderInTransit', authenticate, authorize(1), getAllOrderInTransit);

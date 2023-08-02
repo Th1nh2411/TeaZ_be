@@ -74,7 +74,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 price: 5,
-                discount: 80,
+                discount: 100,
             },
             {
                 name: 'Trân châu trắng',
@@ -83,7 +83,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 price: 5,
-                discount: 90,
+                discount: 100,
             },
 
             {
@@ -93,7 +93,7 @@ module.exports = {
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
                 isActive: 1,
                 price: 10,
-                discount: 90,
+                discount: 100,
             },
         ]);
     },

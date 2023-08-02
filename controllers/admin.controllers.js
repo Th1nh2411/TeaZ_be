@@ -15,7 +15,7 @@ const { QueryTypes, Op, where, STRING, NUMBER } = require('sequelize');
 const db = require('../models/index');
 const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone'); // require
-const { getDetailCart } = require('./order.controllers');
+const { getInvoiceProduct } = require('./order.controllers');
 
 const deleteStaffWithTransaction = async (account, staff) => {
     //console.log('test1')
@@ -118,7 +118,7 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
@@ -172,7 +172,7 @@ const getTotalAndTotalImport = async (dateRangeArray) => {
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],

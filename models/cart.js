@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
             idCart: {
                 allowNull: false,
                 primaryKey: true,
+                autoIncrement: true,
                 type: DataTypes.INTEGER,
             },
         },

@@ -214,6 +214,7 @@ const checkExistProduct = () => {
             }
             //console.log('test')
             const listIdRecipe = idRecipe.split(',').map(Number);
+            listIdRecipe.sort((a, b) => a - b);
             let idProduct = '';
             if (sizeProduct != 0) {
                 idProduct += 'L';
@@ -251,14 +252,11 @@ const checkExistCurrentCart = () => {
         try {
             const user = req.user;
 
-            //console.log('test1')
-
             let [currentCart, created] = await Cart.findOrCreate({
                 where: {
                     idUser: user.idUser,
                 },
             });
-            //console.log(currentCart)
             req.currentCart = currentCart;
             next();
         } catch (error) {

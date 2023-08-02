@@ -60,7 +60,7 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvo
     //let {isSuccess, infoChange} = await changeQuantityIngredientShopWithTransaction(ingredient, Number(quantity), 1, date, price)
     return infoChange1;
 };
-const changeIngredientByInvoice = async (invoice, type, date) => {
+const changeIngredientByCart = async (invoice, type, date) => {
     let infoChange = [];
     //let quantity = 0
     let cart = await Cart.findAll({
@@ -94,41 +94,63 @@ const changeIngredientByInvoice = async (invoice, type, date) => {
 
     return infoChange;
 };
-const getToppingOfProductOfInvoice = async (idProduct) => {
-    let listTopping = await Product.findAll({
+const changeIngredientByInvoice = async (invoice, type, date) => {
+    let infoChange = [];
+    //let quantity = 0
+    console.log(invoice);
+    let invoiceProducts = await Invoice_product.findAll({
         where: {
-            idProduct: idProduct,
+            idInvoice: invoice.idInvoice,
         },
-        attributes: ['idRecipe', 'quantity', 'isMain'],
         include: [
             {
-                model: Recipe,
-                attributes: ['name', 'image'],
+                model: Product,
+                include: [
+                    {
+                        model: Recipe,
+                    },
+                ],
             },
         ],
         raw: true,
     });
 
-    listTopping = listTopping.filter((item) => {
-        if (item['isMain'] == 1) {
-            return false;
-        }
+    for (const item of invoiceProducts) {
+        let idRecipe = Number(item['Product.Recipe.idRecipe']);
+        let quantity = Number(item['quantity']);
+        let info = await changeIngredientByIdRecipe(idRecipe, quantity, type, date, invoice.idInvoice);
+        infoChange.push(...info);
+    }
 
-        return true; // Giữ lại phần tử trong danh sách
+    return infoChange;
+};
+const getToppingProduct = async (idProduct) => {
+    let listTopping = await Product.findAll({
+        where: {
+            idProduct: idProduct,
+            isMain: 0,
+        },
+        include: [
+            {
+                model: Recipe,
+            },
+        ],
+        raw: true,
     });
+    let toppingCost = 0;
 
     listTopping = listTopping.map((item) => {
+        let totalItem = item['Recipe.price'] * (item['Recipe.discount'] / 100);
+        toppingCost += totalItem;
         return {
-            idRecipe: item['idRecipe'],
+            idRecipe: item['Recipe.idRecipe'],
             name: item['Recipe.name'],
-            quantity: item['quantity'],
-            isMain: item['isMain'],
             image: item['Recipe.image'],
+            price: item['Recipe.price'],
         };
     });
     //console.log('test1')
-    //console.log(listTopping)
-    return listTopping;
+    return { listTopping, toppingCost };
 };
 
 const getToppingOfProduct = async (idProduct) => {
@@ -183,29 +205,20 @@ const getToppingOfProduct = async (idProduct) => {
 
     return { listTopping, toppingCost, edit };
 };
-const getDetailCart = async (idCart) => {
-    let cart = await Cart.findAll({
+const getInvoiceProduct = async (idInvoice) => {
+    let products = await Invoice_product.findAll({
         where: {
-            idCart,
+            idInvoice,
         },
-
         include: [
             {
-                model: Cart_product,
-                attributes: ['idProduct', 'size', 'quantity'],
+                model: Product,
                 required: false,
+                where: { isMain: 1 },
                 include: [
                     {
-                        model: Product,
-                        required: false,
-                        where: { isMain: 1 },
-                        attributes: ['quantity'],
-                        include: [
-                            {
-                                model: Recipe,
-                                attributes: ['idRecipe', 'name', 'image', 'price'],
-                            },
-                        ],
+                        model: Recipe,
+                        attributes: ['idRecipe', 'name', 'image', 'price'],
                     },
                 ],
             },
@@ -213,26 +226,24 @@ const getDetailCart = async (idCart) => {
         raw: true,
         //nest:true,
     });
-
-    const promises = cart.map(async (item) => {
-        let listTopping = await getToppingOfProductOfInvoice(item['Cart_products.idProduct']);
+    const promises = products.map(async (item) => {
+        let { listTopping, toppingCost } = await getToppingProduct(item['idProduct']);
 
         return {
             idCart: item['idCart'],
-            name: item['Cart_products.Product.Recipe.name'],
-            idProduct: item['Cart_products.idProduct'],
-            size: item['Cart_products.size'],
-            quantityProduct: item['Cart_products.quantity'],
-            image: item['Cart_products.Product.Recipe.image'],
-            price: item['Cart_products.Product.Recipe.price'],
-            idRecipe: item['Cart_products.Product.Recipe.idRecipe'],
-
+            name: item['Product.Recipe.name'],
+            idProduct: item['idProduct'],
+            size: item['size'],
+            quantityProduct: item['quantity'],
+            image: item['Product.Recipe.image'],
+            price: item['Product.Recipe.price'],
+            idRecipe: item['Product.Recipe.idRecipe'],
             listTopping,
         };
     });
 
-    cart = await Promise.all(promises);
-    cart = cart.filter((item) => {
+    products = await Promise.all(promises);
+    products = products.filter((item) => {
         if (item['name'] == null) {
             if (item['idProduct'] == null) {
                 return false;
@@ -244,89 +255,55 @@ const getDetailCart = async (idCart) => {
         return true;
     });
 
-    return cart;
+    return products;
 };
 
-const getCurrentCartAndTotal = async (user) => {
-    let cart = await Cart.findAll({
+const getCurrentCartAndTotal = async (idCart) => {
+    let products = await Cart_product.findAll({
+        attributes: ['idProduct', 'size', 'quantity'],
         where: {
-            idUser: user.idUser,
+            idCart: idCart,
         },
-
+        required: false,
         include: [
             {
-                model: Cart_product,
-                attributes: ['idProduct', 'size', 'quantity'],
+                model: Product,
                 required: false,
+                where: { isMain: 1 },
                 include: [
                     {
-                        model: Product,
-                        required: false,
-                        where: { isMain: 1 },
-                        include: [
-                            {
-                                model: Recipe,
-                                where: { isActive: 1 },
-                                attributes: ['name', 'image', 'price', 'discount'],
-                            },
-                        ],
+                        model: Recipe,
+                        where: { isActive: 1 },
+                        attributes: ['name', 'image', 'price', 'discount'],
                     },
                 ],
             },
         ],
+
         raw: true,
     });
     let total = 0;
-
-    const promises = cart.map(async (item) => {
-        let { listTopping, toppingCost, edit } = await getToppingOfProduct(item['Cart_products.idProduct']);
-        const mainCost =
-            item['Cart_products.Product.Recipe.price'] * (item['Cart_products.Product.Recipe.discount'] / 100);
-        const totalProducts = (toppingCost + mainCost + item['Cart_products.size']) * item['Cart_products.quantity'];
+    const promises = products.map(async (item) => {
+        let { listTopping, toppingCost } = await getToppingProduct(item['idProduct']);
+        const mainCost = item['Product.Recipe.price'] * (item['Product.Recipe.discount'] / 100);
+        const totalProducts = (toppingCost + mainCost + item['size']) * item['quantity'];
         total += totalProducts;
-        if (edit == 'true') {
-            return {
-                idCart: item['idCart'],
-                name: null,
-                idProduct: item['Cart_products.idProduct'],
-                size: item['Cart_products.size'],
-                quantityProduct: item['Cart_products.quantity'],
-                image: item['Cart_products.Product.Recipe.image'],
-                price: item['Cart_products.Product.Recipe.price'],
-                discount: item['Cart_products.Product.Recipe.discount'],
-                listTopping,
-                totalProducts,
-            };
-        }
-
         return {
             idCart: item['idCart'],
-            name: item['Cart_products.Product.Recipe.name'],
-            idProduct: item['Cart_products.idProduct'],
-            size: item['Cart_products.size'],
-            quantityProduct: item['Cart_products.quantity'],
-            image: item['Cart_products.Product.Recipe.image'],
-            price: item['Cart_products.Product.Recipe.price'],
-            discount: item['Cart_products.Product.Recipe.discount'],
+            name: item['Product.Recipe.name'],
+            idProduct: item['idProduct'],
+            size: item['size'],
+            quantityProduct: item['quantity'],
+            image: item['Product.Recipe.image'],
+            price: item['Product.Recipe.price'],
+            discount: item['Product.Recipe.discount'],
             listTopping,
-            totalProducts,
         };
     });
 
-    cart = await Promise.all(promises);
-    cart = cart.filter((item) => {
-        if (item['name'] == null) {
-            if (item['idProduct'] == null) {
-                return false;
-            }
+    products = await Promise.all(promises);
 
-            return false;
-        }
-        //if(item['listTopping']=='edit') return false
-        return true;
-    });
-    //mess =  Array.from(new Set(mess))
-    return { cart, total };
+    return { products, total };
 };
 const getToppingOptions = async (req, res) => {
     try {
@@ -417,7 +394,6 @@ const delAllItemCart = async (req, res) => {
         //const idProduct = req.idProduct;
         const currentCart = req.currentCart;
 
-        console.log(currentCart.idCart);
         await Cart_product.destroy({
             where: {
                 idCart: currentCart.idCart,
@@ -451,25 +427,15 @@ const getDetailInvoice = async (req, res) => {
         if (idInvoice === '') {
             return res.status(400).json({ isSuccess: false });
         }
-        console.log(user);
         let invoice = await Invoice.findOne({
             where: { idInvoice },
-            include: [
-                {
-                    model: Cart,
-                    required: true,
-                    where: { idUser: user.idUser },
-                    attributes: ['idCart'],
-                },
-            ],
         });
-        console.log('test');
         if (invoice == null) {
             return res.status(400).json({ error: 'invoice không tồn tại hoặc không thuộc user đang đăng nhập' });
         }
-        let cart = await getDetailCart(invoice.Cart.idCart);
+        let products = await getInvoiceProduct(idInvoice);
 
-        return res.status(200).json({ isSuccess: true, invoice, cart });
+        return res.status(200).json({ isSuccess: true, invoice, products });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
@@ -491,16 +457,9 @@ const changeStatusInvoice = async (req, res) => {
 const confirmInvoice = async (req, res) => {
     try {
         //const idProduct = req.idProduct;
-        const { total } = req.body;
-        if (total === undefined) {
-            return res.status(400).json({ isSuccess: false });
-        }
-        if (total === '') {
-            return res.status(400).json({ isSuccess: false });
-        }
+
         let invoice = req.invoice;
 
-        if (invoice.total != total) return res.status(400).json({ isSuccess: false, mes: 'total sai' });
         invoice.status = 1;
         await invoice.save();
 
@@ -512,11 +471,12 @@ const confirmInvoice = async (req, res) => {
 const getCurrentCart = async (req, res) => {
     try {
         const user = req.user;
+        const currentCart = req.currentCart;
 
-        let { cart, total } = await getCurrentCartAndTotal(user);
+        let { products, total } = await getCurrentCartAndTotal(currentCart.idCart);
         //console.log(listTopping)
 
-        return res.status(200).json({ isSuccess: true, cart, total });
+        return res.status(200).json({ isSuccess: true, products, total });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
@@ -557,20 +517,17 @@ const cancelInvoice = async (req, res) => {
         const user = req.user;
 
         const invoice = await Invoice.findOne({
-            where: { status: { [Op.lt]: 3 } },
-            include: [
-                {
-                    model: Cart,
-                    required: true,
-                    where: { idUser: user.idUser },
-                    attributes: ['idCart'],
-                },
-            ],
+            where: { status: { [Op.lt]: 3 }, idUser: user.idUser },
         });
 
-        if (invoice.status == 0) {
+        if (invoice.status < 2) {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
+            console.log(1);
             let infoChange = await changeIngredientByInvoice(invoice, 1, date);
+            console.log(2);
+            await Invoice_product.destroy({
+                where: { idInvoice: invoice.idInvoice },
+            });
             await invoice.destroy();
             return res
                 .status(200)
@@ -578,7 +535,7 @@ const cancelInvoice = async (req, res) => {
         } else {
             return res
                 .status(200)
-                .json({ isSuccess: true, isCancel: false, mes: 'Chưa xử lý trường hợp huỷ hoá đã thanh toán' });
+                .json({ isSuccess: true, isCancel: false, mes: 'Đơn đang được giao. Không thể huỷ hoá đơn' });
         }
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
@@ -593,7 +550,8 @@ const getCurrentInvoice = async (req, res) => {
         if (invoice == null) {
             return res.status(200).json({ isSuccess: true, invoice });
         }
-        let products = await getDetailCart(invoice.idInvoice);
+        let products = await getInvoiceProduct(invoice.idInvoice);
+
         //delete invoice.dataValues.Cart
         return res.status(200).json({ isSuccess: true, invoice, products });
     } catch (error) {
@@ -626,7 +584,15 @@ const createInvoice = async (req, res) => {
         //console.log(idShipping_company)
         const user = req.user;
         const currentCart = req.currentCart;
-        let { cart, total } = await getCurrentCartAndTotal(user);
+        const cartProduct = await Cart_product.findOne({
+            where: {
+                idCart: currentCart.idCart,
+            },
+        });
+        if (!currentCart) {
+            return res.status(400).json({ isSuccess: false, hasProduct: false });
+        }
+        let { products, total } = await getCurrentCartAndTotal(currentCart.idCart);
 
         let idInvoice;
 
@@ -661,11 +627,9 @@ const createInvoice = async (req, res) => {
                 );
             });
             console.log(1);
-            let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
+            let infoChange = await changeIngredientByCart(invoice, 0, date, { transaction: t });
             console.log(2);
             await Cart_product.destroy({ where: { idCart: currentCart.idCart }, transaction: t });
-            console.log(3);
-            await currentCart.destroy({ transaction: t });
 
             await t.commit(); // Lưu thay đổi và kết thúc transaction
             isSuccess = true;
@@ -675,61 +639,12 @@ const createInvoice = async (req, res) => {
         }
 
         //console.log(listTopping)
-        return res.status(200).json({ isSuccess, idInvoice, cart });
+        return res.status(200).json({ isSuccess, idInvoice, products });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
 };
 
-const testInvoice = async (req, res) => {
-    try {
-        const { idShipping_company, shippingFee } = req.body;
-        if (idShipping_company === undefined || shippingFee === undefined) {
-            return res.status(400).json({ isSuccess: false });
-        }
-        if (idShipping_company === '' || shippingFee === '') {
-            return res.status(400).json({ isSuccess: false });
-        }
-        //console.log(idShipping_company)
-        const user = req.user;
-        const currentCart = req.currentCart;
-        let { cart, total, mess } = await getCurrentCartAndTotal(user);
-
-        const t = await db.sequelize.transaction(); // Bắt đầu transaction\
-        try {
-            // console.log('test2')
-            let invoice = await Invoice.create(
-                {
-                    idCart: currentCart.idCart,
-                    idShipping_company,
-                    shippingFee,
-                    total,
-                    date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    status: 0,
-                },
-                { transaction: t },
-            );
-
-            const date = moment().format('YYYY-MM-DD HH:mm:ss');
-            const idInvoice = invoice.idInvoice;
-            currentCart.isCurrent = 0;
-            let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
-            //await currentCart.save()
-            //await invoice.destroy()
-
-            await t.commit(); // Lưu thay đổi và kết thúc transaction
-            isSuccess = true;
-        } catch (error) {
-            isSuccess = false;
-            await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction7
-        }
-
-        //console.log(listTopping)
-        return res.status(200).json({ isSuccess, cart });
-    } catch (error) {
-        res.status(500).json({ error: 'Đã xảy ra lỗi' });
-    }
-};
 const getAllOrderInTransit = async (req, res) => {
     try {
         const staff = req.staff;
@@ -745,7 +660,7 @@ const getAllOrderInTransit = async (req, res) => {
         });
 
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             //console.log(cart)
             return {
                 idInvoices: item['idInvoice'],
@@ -792,7 +707,7 @@ const getAllInvoiceByDate = async (req, res) => {
         });
 
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             //console.log(cart)
             return {
                 idInvoices: item['idInvoice'],
@@ -826,7 +741,7 @@ const getAllOrder = async (req, res) => {
         });
 
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             //console.log(cart)
             return {
                 idInvoices: item['idInvoice'],
@@ -910,8 +825,7 @@ module.exports = {
     changeStatusInvoice,
     getAllOrderInTransit,
     getAllInvoiceByDate,
-    getDetailCart,
+    getInvoiceProduct,
     searchRecipe,
-    testInvoice,
-    changeIngredientByInvoice,
+    changeIngredientByInvoice: changeIngredientByCart,
 };

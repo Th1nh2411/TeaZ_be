@@ -2,18 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-    async up(queryInterface, Sequelize) {
-        return queryInterface.bulkInsert('Invoices', [
-            {
-                idUser: 1,
-                idShipping_company: 1,
-                shippingFee: 15,
-                total: 40,
-                date: '2023-05-15 08:30:22',
-                status: 1,
-            },
-        ]);
-    },
+    async up(queryInterface, Sequelize) {},
 
     async down(queryInterface, Sequelize) {
         /**

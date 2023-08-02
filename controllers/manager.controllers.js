@@ -15,7 +15,7 @@ const { QueryTypes, Op, where, STRING } = require('sequelize');
 const db = require('../models/index');
 const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone'); // require
-const { getDetailCart } = require('./order.controllers');
+const { getInvoiceProduct } = require('./order.controllers');
 
 const createStaffWithTransaction = async (phone, password, name, role) => {
     //console.log('test1')
@@ -99,7 +99,7 @@ const getReportByDate = async (req, res) => {
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
@@ -366,7 +366,7 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
@@ -419,7 +419,7 @@ const getTotalAndTotalImport = async (dateRangeArray) => {
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getDetailCart(item['idCart']);
+            let detail = await getInvoiceProduct(item['idCart']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
