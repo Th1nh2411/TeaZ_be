@@ -303,21 +303,9 @@ const checkExistInvoiceLessThan3 = () => {
             //console.log(user)
             const invoice = await Invoice.findOne({
                 where: {
-                    status: { [Op.lt]: 3 },
+                    status: { [Op.lt]: 3, idUser: user.idUser },
                 },
-                //attributes:[],
-                include: [
-                    {
-                        model: Cart,
-                        required: true,
-                        where: { idUser: user.idUser },
-                        attributes: [],
-                    },
-                ],
             });
-            //console.log('test')
-
-            // const idProduct = req.idProduct;
 
             if (invoice == null) {
                 next();

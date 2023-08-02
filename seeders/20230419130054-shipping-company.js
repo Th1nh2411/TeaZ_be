@@ -9,6 +9,11 @@ module.exports = {
                 costPerKm: 5,
                 image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
             },
+            {
+                name: 'goviet',
+                costPerKm: 4,
+                image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
+            },
         ]);
     },
 

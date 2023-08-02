@@ -22,8 +22,6 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvo
     let infoChange1 = [];
     //console.log(1)
     let ingredients = await getIngredientByIdRecipe(idRecipe);
-    //console.log(ingredients)
-    //console.log(2)
     async function processIngredientsRecursive(index) {
         if (index >= ingredients.length) {
             return; // Kết thúc đệ quy khi đã xử lý hết tất cả các phần tử
@@ -65,7 +63,7 @@ const changeIngredientByInvoice = async (invoice, type, date) => {
     //let quantity = 0
     let cart = await Cart.findAll({
         where: {
-            idCart: invoice.idCart,
+            idUser: invoice.idUser,
         },
         raw: true,
         include: [
@@ -87,7 +85,7 @@ const changeIngredientByInvoice = async (invoice, type, date) => {
 
     for (const item of cart) {
         let idRecipe = Number(item['Cart_products.Product.Recipe.idRecipe']);
-        let quantity = Number(item['Cart_products.Product.quantity']) * Number(item['Cart_products.quantity']);
+        let quantity = Number(item['Cart_products.quantity']);
         let info = await changeIngredientByIdRecipe(idRecipe, quantity, type, date, invoice.idInvoice);
         infoChange.push(...info);
     }
@@ -531,6 +529,7 @@ const getShipFee = async (req, res) => {
             where: { idShipping_company },
             raw: true,
         });
+        console.log(shipping_company);
         let total = (distance / 1000) * shipping_company.costPerKm;
 
         //console.log(listTopping)
@@ -587,15 +586,7 @@ const getCurrentInvoice = async (req, res) => {
     try {
         const user = req.user;
         const invoice = await Invoice.findOne({
-            where: { status: { [Op.lt]: 3 } },
-            include: [
-                {
-                    model: Cart,
-                    required: true,
-                    where: { idUser: user.idUser },
-                    attributes: [],
-                },
-            ],
+            where: { status: { [Op.lt]: 3, idUser: user.idUser } },
         });
         if (invoice == null) {
             return res.status(200).json({ isSuccess: true, invoice });
@@ -612,15 +603,7 @@ const getAllInvoiceUser = async (req, res) => {
         const user = req.user;
 
         const invoices = await Invoice.findAll({
-            include: [
-                {
-                    model: Cart,
-                    where: {
-                        idUser: user.idUser,
-                    },
-                    required: true,
-                },
-            ],
+            where: { idUser: user.idUser },
         });
 
         return res.status(200).json({ isSuccess: true, invoices });
@@ -630,6 +613,7 @@ const getAllInvoiceUser = async (req, res) => {
 };
 const createInvoice = async (req, res) => {
     try {
+        let isSuccess;
         const { idShipping_company, shippingFee } = req.body;
         if (idShipping_company === undefined || shippingFee === undefined) {
             return res.status(400).json({ isSuccess: false });
@@ -640,32 +624,31 @@ const createInvoice = async (req, res) => {
         //console.log(idShipping_company)
         const user = req.user;
         const currentCart = req.currentCart;
-        let { cart, total, mess } = await getCurrentCartAndTotal(user);
-
-        console.log('test1');
+        let { cart, total } = await getCurrentCartAndTotal(user);
 
         let idInvoice;
 
         const t = await db.sequelize.transaction(); // Bắt đầu transaction\
         try {
-            // console.log('test2')
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
+
             let invoice = await Invoice.create(
                 {
-                    idCart: currentCart.idCart,
+                    idUser: user.idUser,
                     idShipping_company,
                     shippingFee,
                     total,
-                    date: date,
+                    date,
                     status: 0,
                 },
                 { transaction: t },
             );
-
+            console.log(1);
             idInvoice = invoice.idInvoice;
-            currentCart.isCurrent = 0;
+            // currentCart.isCurrent = 0;
             let infoChange = await changeIngredientByInvoice(invoice, 0, date, { transaction: t });
-            await currentCart.save({ transaction: t });
+            await currentCart.destroy({ transaction: t });
+            console.log(currentCart);
             //await invoice.destroy()
 
             await t.commit(); // Lưu thay đổi và kết thúc transaction
@@ -676,7 +659,7 @@ const createInvoice = async (req, res) => {
         }
 
         //console.log(listTopping)
-        return res.status(200).json({ isSuccess: true, idInvoice, cart });
+        return res.status(200).json({ isSuccess, idInvoice, cart });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }

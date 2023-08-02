@@ -43,6 +43,7 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
     //console.log('testn')
     let isSuccess;
+    let runOut = false;
     let infoChange;
     try {
         // console.log('test2')
@@ -50,6 +51,7 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
             ingredient.quantity += quantity;
 
             await ingredient.save({ transaction: t });
+
             infoChange = await Import.create(
                 {
                     idIngredient: ingredient.idIngredient,
@@ -64,7 +66,9 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
             ingredient.quantity -= quantity;
             //console.log('test')
             //console.log(ingredient)
+
             await ingredient.save({ transaction: t });
+
             infoChange = await Export.create(
                 {
                     idIngredient: ingredient.idIngredient,
@@ -78,6 +82,7 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
         //console.log('test3')
         if (ingredient.quantity < 0) {
             isSuccess = false;
+            runOut = true;
             await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction
         }
 
@@ -89,7 +94,7 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
         //console.error('Transaction rolled back:', error);
     }
 
-    return { isSuccess, infoChange };
+    return { isSuccess, runOut, infoChange };
 };
 const menuByTypeForStaff = async (req, res) => {
     try {
