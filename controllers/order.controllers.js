@@ -593,9 +593,9 @@ const getCurrentInvoice = async (req, res) => {
         if (invoice == null) {
             return res.status(200).json({ isSuccess: true, invoice });
         }
-        let cart = await getDetailCart(invoice.idCart);
+        let products = await getDetailCart(invoice.idInvoice);
         //delete invoice.dataValues.Cart
-        return res.status(200).json({ isSuccess: true, invoice, cart });
+        return res.status(200).json({ isSuccess: true, invoice, products });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }

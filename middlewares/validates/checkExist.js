@@ -15,13 +15,13 @@ const { QueryTypes, Op, where, STRING } = require('sequelize');
 const createProduct = async (idProduct) => {
     let recipeList = idProduct.substring(1);
     recipeList = recipeList.split(','); // Tách các  idRecipe
+    console.log(1);
+    console.log(recipeList);
     let createdProducts = [];
     // Duyệt qua từng cặp idRecipe
     // console.log(recipeList);
     for (let i = 0; i < recipeList.length; i++) {
-        const productData = recipeList[i];
-
-        const idRecipe = productData[0];
+        const idRecipe = recipeList[i];
 
         const isMain = i === 0 ? 1 : 0; // Thiết lập id đầu là isMain
 
@@ -68,7 +68,6 @@ const checkExistAccount = () => {
             //console.log(1)
             //const staff = req.staff
             const { username } = req.body;
-            console.log(req.body);
             if (username === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
             }
@@ -82,7 +81,6 @@ const checkExistAccount = () => {
                 },
             });
 
-            console.log(account);
             if (!account) {
                 return res.status(404).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
             } else {
@@ -399,7 +397,6 @@ const checkExistIngredientShop = () => {
 const checkNotExistAcount = () => {
     return async (req, res, next) => {
         try {
-            console.log(1);
             //const staff = req.staff
             const { phone, mail } = req.body;
 
