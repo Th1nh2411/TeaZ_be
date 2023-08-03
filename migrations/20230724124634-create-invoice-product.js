@@ -26,6 +26,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.INTEGER,
             },
+            totalProduct: {
+                allowNull: false,
+                type: Sequelize.DOUBLE,
+            },
         });
     },
     async down(queryInterface, Sequelize) {

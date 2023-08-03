@@ -364,31 +364,22 @@ const checkExistIngredientShop = () => {
                 return res.status(400).json({ isSuccess: false, mes: 'importIngredient2' });
             }
 
-            let [ingredient, created] = await Ingredient_shop.findOrCreate({
-                where: {
-                    idIngredient,
-                    idShop: staff.idShop,
-                },
-            });
-            let existIngrediet = await Ingredient.findOne({
+            let existIngredient = await Ingredient.findOne({
                 where: {
                     idIngredient,
                     isActive: 1,
                 },
             });
             //console.log(created)
-            if (!existIngrediet)
-                return res.status(404).send({ isSuccess: false, created, mes: 'Không tồn tại ingredient' });
-            if (ingredient != null) {
-                req.ingredient = ingredient;
+
+            if (existIngredient != null) {
+                req.ingredient = existIngredient;
                 next();
             } else {
-                return res
-                    .status(500)
-                    .send({ isSuccess: false, created, mes: 'có lỗi trong quá trình tạo ingredientShop' });
+                return res.status(500).send({ isSuccess: false, created, mes: 'Không tìm thấy nguyên liệu' });
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'có lỗi trong quá trình tạo ingredientShop' });
+            return res.status(500).send({ isSuccess: false, mes: 'có lỗi trong quá trình checkExist Ingredient' });
         }
     };
 };

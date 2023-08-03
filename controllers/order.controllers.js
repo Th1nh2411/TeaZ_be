@@ -236,9 +236,9 @@ const getInvoiceProduct = async (idInvoice) => {
             size: item['size'],
             quantityProduct: item['quantity'],
             image: item['Product.Recipe.image'],
-            price: item['Product.Recipe.price'],
             idRecipe: item['Product.Recipe.idRecipe'],
             listTopping,
+            totalProduct: item['totalProduct'],
         };
     });
 
@@ -286,19 +286,19 @@ const getCurrentCartAndTotal = async (idCart) => {
     const promises = products.map(async (item) => {
         let { listTopping, toppingCost } = await getToppingProduct(item['idProduct']);
         const mainCost = item['Product.Recipe.price'] * (item['Product.Recipe.discount'] / 100);
-        const totalProducts = (toppingCost + mainCost + item['size']) * item['quantity'];
-        total += totalProducts;
+        const totalProduct = (toppingCost + mainCost + item['size']) * item['quantity'];
+        total += totalProduct;
         return {
             idCart: item['idCart'],
             name: item['Product.Recipe.name'],
             idProduct: item['idProduct'],
             size: item['size'],
-            quantityProduct: item['quantity'],
+            quantity: item['quantity'],
             image: item['Product.Recipe.image'],
             price: item['Product.Recipe.price'],
             discount: item['Product.Recipe.discount'],
             listTopping,
-            totalProducts,
+            totalProduct,
         };
     });
 
@@ -601,13 +601,13 @@ const createInvoice = async (req, res) => {
         }
         let { products, total } = await getCurrentCartAndTotal(currentCart.idCart);
 
-        let idInvoice;
+        let invoice;
 
         const t = await db.sequelize.transaction(); // Bắt đầu transaction\
         try {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
 
-            let invoice = await Invoice.create(
+            invoice = await Invoice.create(
                 {
                     idUser: user.idUser,
                     idShipping_company,
@@ -618,17 +618,16 @@ const createInvoice = async (req, res) => {
                 },
                 { transaction: t },
             );
-            let listCartProduct = await Cart_product.findAll({
-                where: { idCart: currentCart.idCart },
-            });
-            idInvoice = invoice.idInvoice;
-            listCartProduct.forEach(async (item, index) => {
+
+            let idInvoice = invoice.idInvoice;
+            products.forEach(async (product, index) => {
                 await Invoice_product.create(
                     {
-                        idInvoice,
-                        idProduct: item.idProduct,
-                        size: item.size,
-                        quantity: item.quantity,
+                        idInvoice: idInvoice,
+                        idProduct: product.idProduct,
+                        size: product.size,
+                        quantity: product.quantity,
+                        totalProduct: product.totalProduct,
                     },
                     { transaction: t },
                 );
@@ -646,7 +645,7 @@ const createInvoice = async (req, res) => {
         }
 
         //console.log(listTopping)
-        return res.status(200).json({ isSuccess, idInvoice, products });
+        return res.status(200).json({ isSuccess, invoice, products });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }

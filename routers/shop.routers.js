@@ -7,7 +7,7 @@ const {
     getInfoShop,
     editInfoShop,
     detailRecipe,
-    getListIngredientShop,
+    getListIngredient,
     importIngredient,
     exportIngredient,
     getListToppingByType,
@@ -23,13 +23,12 @@ shopRouter.get('/type', menuByTypeForUser);
 // shopRouter.get('/getListToppingByType', getListToppingByType);
 shopRouter.get('/searchInShop', searchRecipe);
 shopRouter.get('/typeForStaff', authenticate, authorize(1), menuByTypeForStaff);
-shopRouter.get('/info', authenticate, authorize(1), getInfoShop);
-shopRouter.get('/listIngredientShop', authenticate, authorize(1), getListIngredientShop);
+shopRouter.get('/listIngredientShop', authenticate, authorize(1), getListIngredient);
 shopRouter.get('/detailRecipe/:idRecipe', authenticate, authorize(1), detailRecipe);
 shopRouter.put('/import/:idIngredient', authenticate, authorize(2), checkExistIngredientShop(), importIngredient);
 shopRouter.put('/export/:idIngredient', authenticate, authorize(2), checkExistIngredientShop(), exportIngredient);
-shopRouter.put('/editInfo', authenticate, authorize(2), editInfoShop);
-shopRouter.put('/editRecipeShop/:idRecipe', authenticate, authorize(2), editRecipeShop);
+shopRouter.patch('/editInfo', authenticate, authorize(2), editInfoShop);
+// shopRouter.put('/editRecipeShop/:idRecipe', authenticate, authorize(2), editRecipeShop);
 module.exports = {
     shopRouter,
 };

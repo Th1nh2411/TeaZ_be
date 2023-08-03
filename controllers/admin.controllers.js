@@ -741,7 +741,7 @@ const addRecipe = async (req, res) => {
 };
 const editRecipe = async (req, res) => {
     try {
-        const { image, info, name, price, idType } = req.body;
+        const { image, info, name, price, idType, isActive, discount } = req.body;
         const { idRecipe } = req.params;
         let infoRecipe = await Recipe.findOne({
             where: { idRecipe: idRecipe },
@@ -768,9 +768,14 @@ const editRecipe = async (req, res) => {
         if (price) {
             infoRecipe.price = price;
         }
-        i;
+        if (isActive) {
+            infoRecipe.isActive = isActive;
+        }
+        if (discount) {
+            infoRecipe.discount = discount;
+        }
         await infoRecipe.save();
-        return res.status(200).json({ isSuccess: true });
+        return res.status(200).json({ infoRecipe, isSuccess: true });
     } catch (error) {
         res.status(500).json({ error, mes: 'editManager' });
     }

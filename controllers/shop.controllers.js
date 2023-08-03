@@ -122,22 +122,13 @@ const detailRecipe = async (req, res) => {
 
         let recipe = await Recipe.findOne({
             where: { idRecipe },
-            include: [
-                {
-                    model: Recipe_shop,
-                    attributes: ['isActive', 'discount'],
-                },
-            ],
             raw: true,
         });
         let ingredients = await getIngredientByIdRecipe(idRecipe);
         //console.log(1)
         //console.log(recipe['Recipe_shops.isActive'])
-        recipe.isActive = recipe['Recipe_shops.isActive'];
-        recipe.discount = recipe['Recipe_shops.discount'];
+
         recipe.ingredients = ingredients;
-        delete recipe['Recipe_shops.isActive'];
-        delete recipe['Recipe_shops.discount'];
 
         return res.status(200).json({ isSuccess: true, recipe });
     } catch (error) {
@@ -235,28 +226,13 @@ const getInfoShop = async (req, res) => {
     }
 };
 
-const getListIngredientShop = async (req, res) => {
+const getListIngredient = async (req, res) => {
     try {
         const staff = req.staff;
 
-        let ingredients = await Ingredient_shop.findAll({
-            include: [
-                {
-                    model: Ingredient,
-                    where: { isActive: 1 },
-                },
-            ],
+        let ingredients = await Ingredient.findAll({
+            where: { isActive: 1 },
             raw: true,
-        });
-
-        ingredients = ingredients.map((item) => {
-            return {
-                idIngredient: item['idIngredient'],
-                name: item['Ingredient.name'],
-                image: item['Ingredient.image'],
-                quantity: item['quantity'],
-                unitName: item['Ingredient.unitName'],
-            };
         });
 
         return res.status(200).json({ isSuccess: true, ingredients });
@@ -268,23 +244,15 @@ const getListIngredientShop = async (req, res) => {
 const editInfoShop = async (req, res) => {
     try {
         const staff = req.staff;
-        const { isActive, image } = req.body;
+        const { isActive, image, address, latitude, longitude } = req.body;
 
-        if (isActive === undefined || image === undefined) {
-            return res.status(400).json({ isSuccess: false });
-        }
-        if (isActive === '' || image === '') {
-            return res.status(400).json({ isSuccess: false });
-        }
-        let shop;
+        const shop = await Shop.findOne({});
         if (Number(isActive) == 1 || Number(isActive) == 0) {
-            shop = await Shop.findOne({
-                //attributes: ['address','image','isActive'],
-            });
-
-            shop.isActive = Number(isActive);
-            shop.image = image;
-
+            shop.isActive = Number(isActive) ? Number(isActive) : shop.isActive;
+            shop.image = image ? image : shop.image;
+            shop.address = address ? address : shop.address;
+            shop.latitude = latitude ? latitude : shop.latitude;
+            shop.longitude = longitude ? longitude : shop.longitude;
             await shop.save();
         } else return res.status(400).json({ isSuccess: false });
 
@@ -306,9 +274,10 @@ const importIngredient = async (req, res) => {
         if (isNaN(price) || isNaN(quantity)) {
             return res.status(400).json({ isSuccess: false, mes: 'importIngredient2' });
         }
+        console.log('test');
 
         if (Number(quantity) <= 0) return res.status(400).json({ isSuccess: false, mes: 'Số lượng phải lớn hơn 0' });
-        console.log('test');
+        console.log('test2');
         let { isSuccess, infoChange } = await changeQuantityIngredientShopWithTransaction(
             ingredient,
             Number(quantity),
@@ -396,7 +365,7 @@ module.exports = {
     getInfoShop,
     editInfoShop,
     detailRecipe,
-    getListIngredientShop,
+    getListIngredient,
     importIngredient,
     exportIngredient,
     getIngredientByIdRecipe,

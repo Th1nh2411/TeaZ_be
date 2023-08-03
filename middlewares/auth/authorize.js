@@ -5,7 +5,6 @@ const authorize = (role) => async (req, res, next) => {
     try {
         //console.log(1)
         const account = req.account;
-        console.log(account.dataValues.role);
         if (role == 0) {
             if (account.dataValues.role === role) {
                 const user = await User.findOne({
@@ -22,7 +21,6 @@ const authorize = (role) => async (req, res, next) => {
                     where: { idAcc: account.idAcc },
                 });
                 req.staff = staff;
-                //console.log('2')
                 next();
             } else {
                 return res.status(403).json({ message: 'Bạn không có quyền sử dụng chức năng này!' });

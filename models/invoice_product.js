@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
 
                 type: DataTypes.INTEGER,
             },
+            totalProduct: {
+                type: DataTypes.DOUBLE,
+                allowNull: false,
+            },
         },
         {
             sequelize,
