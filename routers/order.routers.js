@@ -32,7 +32,7 @@ const { authenticate } = require('../middlewares/auth/authenticate.js');
 const orderRouter = express.Router();
 
 // Customer
-orderRouter.get('/topping', getToppingOptions);
+// orderRouter.get('/topping', getToppingOptions);
 orderRouter.get('/search', searchRecipe);
 orderRouter.get('/currentCart', authenticate, authorize(0), checkExistCurrentCart(), getCurrentCart);
 orderRouter.post('/addToCart', authenticate, authorize(0), checkExistCurrentCart(), checkExistProduct(), addToCart);
@@ -56,6 +56,7 @@ orderRouter.delete(
 
 orderRouter.delete('/deleteProductCart', authenticate, authorize(0), checkExistCurrentCart(), delAllItemCart);
 
+orderRouter.get('/getListCompanies', getListCompanies);
 orderRouter.get('/getShipFee', getShipFee);
 orderRouter.get('/getCurrentInvoice', authenticate, authorize(0), getCurrentInvoice);
 orderRouter.get('/getAllInvoice', authenticate, authorize(0), getAllInvoiceUser);
@@ -74,11 +75,10 @@ orderRouter.delete('/cancelInvoice', authenticate, authorize(0), cancelInvoice);
 // Manage
 orderRouter.get('/getAllOrder', authenticate, authorize(1), getAllOrder);
 orderRouter.get('/getAllOrderInTransit', authenticate, authorize(1), getAllOrderInTransit);
-orderRouter.get('/getAllInvoiceByDate/:date', authenticate, authorize(1), getAllInvoiceByDate);
 orderRouter.put('/completeOrder', authenticate, authorize(1), checkExistInvoiceStatus(1), changeStatusInvoice);
-orderRouter.get('/reportByDate/:date', authenticate);
 orderRouter.put('/completeInvoice', authenticate, authorize(1), checkExistInvoiceStatus(2), changeStatusInvoice);
-orderRouter.get('/getListCompanies', getListCompanies);
+orderRouter.get('/reportByDate/:date', authenticate);
+orderRouter.get('/getAllInvoiceByDate/:date', authenticate, authorize(1), getAllInvoiceByDate);
 
 module.exports = {
     orderRouter,

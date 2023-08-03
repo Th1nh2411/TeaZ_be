@@ -298,6 +298,7 @@ const getCurrentCartAndTotal = async (idCart) => {
             price: item['Product.Recipe.price'],
             discount: item['Product.Recipe.discount'],
             listTopping,
+            totalProducts,
         };
     });
 
@@ -529,9 +530,15 @@ const cancelInvoice = async (req, res) => {
                 where: { idInvoice: invoice.idInvoice },
             });
             await invoice.destroy();
-            return res
-                .status(200)
-                .json({ isSuccess: true, isCancel: true, mes: 'Đã huỷ thành công hoá đơn chưa thanh toán' });
+            if (invoice.status == 0) {
+                return res.status(200).json({ isSuccess: true, isCancel: true, mes: 'Đã huỷ thành công hoá đơn' });
+            } else {
+                return res.status(200).json({
+                    isSuccess: true,
+                    isCancel: true,
+                    mes: 'Đã huỷ thành công hoá đơn. Hệ thống sẽ hoàn tiền cho quý khách trong vòng 24h',
+                });
+            }
         } else {
             return res
                 .status(200)
@@ -589,7 +596,7 @@ const createInvoice = async (req, res) => {
                 idCart: currentCart.idCart,
             },
         });
-        if (!currentCart) {
+        if (!cartProduct) {
             return res.status(400).json({ isSuccess: false, hasProduct: false });
         }
         let { products, total } = await getCurrentCartAndTotal(currentCart.idCart);
@@ -653,25 +660,24 @@ const getAllOrderInTransit = async (req, res) => {
             where: {
                 status: 2,
             },
-            attributes: ['idInvoice', 'date', 'idCart'],
+            attributes: ['idInvoice', 'date', 'idUser'],
             order: [['date', 'ASC']],
 
             raw: true,
         });
 
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let products = await getInvoiceProduct(item['idInvoice']);
             //console.log(cart)
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
 
-                detail,
+                products,
             };
         });
 
         invoices = await Promise.all(promises);
-        console.log('test2');
 
         return res.status(200).json({ isSuccess: true, invoices });
     } catch (error) {
@@ -700,21 +706,21 @@ const getAllInvoiceByDate = async (req, res) => {
                     [Op.ne]: 0,
                 },
             },
-            attributes: ['idInvoice', 'total', 'date', 'status', 'idCart'],
+            attributes: ['idInvoice', 'total', 'date', 'status', 'idUser'],
             order: [['date', 'ASC']],
 
             raw: true,
         });
 
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let products = await getInvoiceProduct(item['idInvoice']);
             //console.log(cart)
             return {
                 idInvoices: item['idInvoice'],
                 total: item['total'],
                 date: item['date'],
 
-                detail,
+                products,
             };
         });
 
@@ -734,20 +740,19 @@ const getAllOrder = async (req, res) => {
             where: {
                 status: 1,
             },
-            attributes: ['idInvoice', 'date', 'idCart'],
+            attributes: ['idInvoice', 'date', 'idUser'],
             order: [['date', 'ASC']],
 
             raw: true,
         });
 
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let products = await getInvoiceProduct(item['idInvoice']);
             //console.log(cart)
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
-
-                detail,
+                products,
             };
         });
 

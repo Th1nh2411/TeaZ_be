@@ -86,11 +86,13 @@ const login = async (req, res) => {
                 },
             });
 
-            const token = jwt.sign({ phone: account.phone }, 'hehehe', {
+            const token = jwt.sign({ phone: account.phone, mail: account.mail }, 'hehehe', {
                 expiresIn: 30 * 60 * 60 * 60,
             });
-            userInfo.dataValues.phone = phone;
+            // userInfo.dataValues.phone = phone;
             userInfo.dataValues.role = account.role;
+            userInfo.dataValues.phone = account.phone;
+            userInfo.dataValues.mail = account.mail;
 
             res.status(200).json({
                 userInfo,

@@ -1,10 +1,11 @@
-const { Account, User, Staff } = require('../../models');
+const { Account, User } = require('../../models');
 const { QueryTypes } = require('sequelize');
 
 const authorize = (role) => async (req, res, next) => {
     try {
         //console.log(1)
         const account = req.account;
+        console.log(account.dataValues.role);
         if (role == 0) {
             if (account.dataValues.role === role) {
                 const user = await User.findOne({
@@ -17,7 +18,7 @@ const authorize = (role) => async (req, res, next) => {
             }
         } else {
             if (account.dataValues.role >= role) {
-                const staff = await Staff.findOne({
+                const staff = await User.findOne({
                     where: { idAcc: account.idAcc },
                 });
                 req.staff = staff;

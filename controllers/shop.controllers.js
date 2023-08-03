@@ -100,24 +100,11 @@ const menuByTypeForStaff = async (req, res) => {
         let menu;
         if (req.query.idType !== '') {
             listType = req.query.idType.split(',').map(Number);
-            menu = await Recipe_shop.findAll({
-                attributes: ['discount', 'isActive'],
-                include: [
-                    {
-                        model: Recipe,
-                        where: { idType: { [Op.in]: listType } },
-                    },
-                ],
+            menu = await Recipe.findAll({
+                where: { idType: { [Op.in]: listType } },
             });
         } else {
-            menu = await Recipe_shop.findAll({
-                attributes: ['discount', 'isActive'],
-                include: [
-                    {
-                        model: Recipe,
-                    },
-                ],
-            });
+            menu = await Recipe.findAll({});
         }
         return res.status(200).json({ isSuccess: true, menu });
     } catch (error) {
