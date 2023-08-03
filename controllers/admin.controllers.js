@@ -91,7 +91,7 @@ const getTotal = (listInvoices) => {
     return total;
 };
 const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
-    let listTotalAndTotalAmountImpot = [];
+    let listTotalAndTotalAmountImport = [];
 
     for (var i = 0; i < dateRangeArray.length; i++) {
         // Lấy đối tượng dateRange tại vị trí i
@@ -111,20 +111,20 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
                     [Op.ne]: 0,
                 },
             },
-            attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
+            attributes: ['idInvoice', 'date', 'status', 'idUser', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idInvoice']);
+            let products = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
 
-                detail,
+                products,
             };
         });
 
@@ -140,9 +140,9 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
             countInvoices: countInvoices,
             totalAmountImport: totalAmountImport,
         };
-        listTotalAndTotalAmountImpot.push(totalAndTotalAmountImport);
+        listTotalAndTotalAmountImport.push(totalAndTotalAmountImport);
     }
-    return listTotalAndTotalAmountImpot;
+    return listTotalAndTotalAmountImport;
 };
 const getTotalAndTotalImport = async (dateRangeArray) => {
     let listTotalAndTotalAmountImport = [];
@@ -165,19 +165,19 @@ const getTotalAndTotalImport = async (dateRangeArray) => {
                     [Op.ne]: 0,
                 },
             },
-            attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
+            attributes: ['idInvoice', 'date', 'status', 'idUser', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let products = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
-                detail,
+                products,
             };
         });
 
@@ -429,9 +429,9 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
     return { topNames, topToppings, countProducts, countToppings, countProductWithTopping };
 };
 
-const getSixMonthInputAndOuput = async (req, res) => {
+const getSixMonthInputAndOutput = async (req, res) => {
     try {
-        //const staff = req.staff
+        //const staff = req.user
         var currentDate = moment();
 
         var dateRangeArray = [];
@@ -457,9 +457,9 @@ const getSixMonthInputAndOuput = async (req, res) => {
         res.status(500).json({ error, mes: 'reportByDate' });
     }
 };
-const getSixMonthInputAndOuputAllShop = async (req, res) => {
+const getSixMonthInputAndOutputAllShop = async (req, res) => {
     try {
-        //const staff = req.staff
+        //const staff = req.user
 
         var currentDate = moment();
 
@@ -538,7 +538,7 @@ const getListShop = async (req, res) => {
 };
 const deleteManager = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const account = req.account;
 
         if (account.role === 2) {
@@ -583,7 +583,7 @@ const editIngredient = async (req, res) => {
 };
 const editManager = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { idStaff } = req.params;
         const { phone, name, password } = req.body;
 
@@ -616,7 +616,7 @@ const editManager = async (req, res) => {
 };
 const editShop = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { address, image, latitude, longitude, isActive } = req.body;
 
         let infoShop = await Shop.findOne();
@@ -649,7 +649,7 @@ const editShop = async (req, res) => {
 
 // const addManager = async (req, res) => {
 //     try {
-//         const staff = req.staff;
+//         const staff = req.user;
 //         const { phone, password, name } = req.body;
 //         if (phone === '' || password === '' || name === '' ) {
 //             return res.status(400).json({ isSuccess: false, mes: 'addManager1' });
@@ -887,7 +887,7 @@ const getIngredientByIdRecipeAdmin = async (idRecipe) => {
 };
 const detailRecipeAdmin = async (req, res) => {
     try {
-        //const staff = req.staff
+        //const staff = req.user
         const { idRecipe } = req.params;
 
         if (idRecipe === '' || isNaN(idRecipe)) {
@@ -901,35 +901,8 @@ const detailRecipeAdmin = async (req, res) => {
         });
 
         let ingredients = await getIngredientByIdRecipeAdmin(idRecipe);
-        console.log(1);
-        let listTopping = await Recipe_type.findAll({
-            where: { idType: detailRecipe.idType },
-            //attributes: [['name', 'Recipe.name']],
-            attributes: ['idRecipe'],
-            required: true,
-            include: [
-                {
-                    model: Recipe,
-                    attributes: ['name', 'price', 'image'],
-                    required: true,
-                },
-            ],
-            raw: true,
-        });
-        console.log(2);
-        listTopping = listTopping.map((item) => {
-            return {
-                idRecipe: item['idRecipe'],
-                name: item['Recipe.name'],
 
-                price: item['Recipe.price'],
-                image: item['Recipe.image'],
-            };
-        });
-        //console.log(listTopping)
-        console.log(3);
         detailRecipe.ingredients = ingredients;
-        detailRecipe.listTopping = listTopping;
 
         return res.status(200).json({ isSuccess: true, detailRecipe });
     } catch (error) {
@@ -941,11 +914,11 @@ module.exports = {
     // addManager,
     deleteManager,
     editManager,
-    getSixMonthInputAndOuput,
+    getSixMonthInputAndOutput,
     getListShop,
     editShop,
     addShop,
-    getSixMonthInputAndOuputAllShop,
+    getSixMonthInputAndOutputAllShop,
     getListIngredient,
     addIngredient,
     editIngredient,

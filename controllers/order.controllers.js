@@ -653,7 +653,7 @@ const createInvoice = async (req, res) => {
 
 const getAllOrderInTransit = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
 
         let invoices = await Invoice.findAll({
             where: {
@@ -685,7 +685,7 @@ const getAllOrderInTransit = async (req, res) => {
 };
 const getAllInvoiceByDate = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { date } = req.params;
         if (date === undefined) {
             return res.status(400).json({ isSuccess: false });
@@ -733,7 +733,7 @@ const getAllInvoiceByDate = async (req, res) => {
 };
 const getAllOrder = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
 
         let invoices = await Invoice.findAll({
             where: {

@@ -5,7 +5,7 @@ const {
     getListStaff,
     getDetailChangeIngredientShop,
     addStaff,
-    getSixMonthInputAndOuput,
+    getSixMonthInputAndOutput,
     editStaff,
     deleteStaff,
     editShop,
@@ -33,8 +33,7 @@ const { authorize } = require('../middlewares/auth/authorize.js');
 const { authenticate } = require('../middlewares/auth/authenticate.js');
 const managerRouter = express.Router();
 
-managerRouter.get('/detailChangeIngredientShop/:date', authenticate, authorize(2), getDetailChangeIngredientShop);
-managerRouter.get('/getDataForChart', authenticate, authorize(2), getSixMonthInputAndOuput);
+managerRouter.get('/getDataForChart', authenticate, authorize(2), getSixMonthInputAndOutput);
 
 // managerRouter.post('/addManager', authenticate, authorize(3), checkNotExistAcount(), addManager);
 managerRouter.patch('/editManager/:idStaff', authenticate, authorize(3), editManager);
@@ -59,8 +58,6 @@ managerRouter.put(
     checkExistIngredientAndRecipe(),
     editRecipeIngredient,
 );
-managerRouter.get('/getDataForChart/:idShop', authenticate, authorize(3), getSixMonthInputAndOuput);
-managerRouter.patch('/editShop/:idShop', authenticate, authorize(3), editShop);
 managerRouter.post('/addRecipeType', authenticate, authorize(3), checkExistTypeAndRecipe(), addRecipeType);
 managerRouter.delete('/deleteRecipeType', authenticate, authorize(3), checkExistTypeAndRecipe(), deleteRecipeType);
 

@@ -95,7 +95,7 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
 };
 const menuByTypeForStaff = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         let listType = [];
         let menu;
         if (req.query.idType !== '') {
@@ -113,7 +113,7 @@ const menuByTypeForStaff = async (req, res) => {
 };
 const detailRecipe = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { idRecipe } = req.params;
 
         if (idRecipe === '' || isNaN(idRecipe)) {
@@ -137,7 +137,7 @@ const detailRecipe = async (req, res) => {
 };
 const editRecipeShop = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { idRecipe } = req.params;
         const { isActive, discount } = req.body;
         if (isActive === undefined || discount === undefined || idRecipe === '') {
@@ -214,7 +214,7 @@ const menuByTypeForUser = async (req, res) => {
 
 const getInfoShop = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
 
         const shop = await Shop.findOne({
             attributes: ['address', 'image', 'isActive'],
@@ -228,10 +228,9 @@ const getInfoShop = async (req, res) => {
 
 const getListIngredient = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
 
         let ingredients = await Ingredient.findAll({
-            where: { isActive: 1 },
             raw: true,
         });
 
@@ -243,7 +242,7 @@ const getListIngredient = async (req, res) => {
 
 const editInfoShop = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { isActive, image, address, latitude, longitude } = req.body;
 
         const shop = await Shop.findOne({});
@@ -264,7 +263,7 @@ const editInfoShop = async (req, res) => {
 const importIngredient = async (req, res) => {
     try {
         const t = await db.sequelize.transaction(); // Bắt đầu transaction
-        const staff = req.staff;
+        const staff = req.user;
         const ingredient = req.ingredient;
         const { price, quantity } = req.body;
         const date = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -295,7 +294,7 @@ const importIngredient = async (req, res) => {
 const exportIngredient = async (req, res) => {
     try {
         const t = await db.sequelize.transaction(); // Bắt đầu transaction
-        const staff = req.staff;
+        const staff = req.user;
         const ingredient = req.ingredient;
         const { info, quantity } = req.body;
         const date = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -357,6 +356,34 @@ const getListToppingByType = async (req, res) => {
         res.status(500).json({ error: 'getListRecipeAdmin' });
     }
 };
+const getShopInfo = async (req, res) => {
+    try {
+        const currentLocation = {
+            latitude: parseFloat(req.query.latitude),
+            longitude: parseFloat(req.query.longitude),
+        };
+        // const listStoreNearest = getNearestDistances(currentLocation, listShop, 2);
+        const shop = await Shop.findOne({
+            attributes: ['address', 'image', 'isActive', 'latitude', 'longitude'],
+            raw: true,
+        });
+        console.log(currentLocation, shop);
+        const distance = geolib.getDistance(currentLocation, { latitude: shop.latitude, longitude: shop.longitude });
+        //console.log(listShop)
+        if (!shop) {
+            return res.status(500).json({ error: 'Không tìm thấy cửa hàng' });
+        }
+        //const nearestDistances = getNearestDistances(currentLocation, coordinateList);
+
+        return res.status(200).json({
+            isSuccess: true,
+            shop,
+            distance,
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Đã xảy ra lỗi' });
+    }
+};
 module.exports = {
     // getDetailTaiKhoan,
     menuByTypeForUser,
@@ -371,4 +398,5 @@ module.exports = {
     getIngredientByIdRecipe,
     changeQuantityIngredientShopWithTransaction,
     getListToppingByType,
+    getShopInfo,
 };

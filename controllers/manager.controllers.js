@@ -60,7 +60,7 @@ const createStaffWithTransaction = async (phone, password, name, mail) => {
 
 const getReportByDate = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { date } = req.params;
         if (req.query.quantity == '' || req.query.quantity == undefined) {
             return res.status(400).json({ isSuccess: false });
@@ -133,7 +133,7 @@ const getReportByDate = async (req, res) => {
 };
 const getDetailChangeIngredientShop = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { date } = req.params;
 
         if (req.query.type == '' || req.query.type == undefined) {
@@ -166,7 +166,7 @@ const getDetailChangeIngredientShop = async (req, res) => {
 
 const getListStaff = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         let listStaffs = await User.findAll({
             include: [
                 {
@@ -194,11 +194,11 @@ const getListStaff = async (req, res) => {
 };
 const deleteStaff = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const account = req.account;
 
         if (account.role === 1) {
-            let infoStaff = await Staff.findOne({
+            let infoStaff = await User.findOne({
                 where: { idAcc: account.idAcc },
             });
             let isSuccess = await deleteStaffWithTransaction(account, infoStaff);
@@ -211,7 +211,7 @@ const deleteStaff = async (req, res) => {
 };
 const editStaff = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { idUser } = req.params;
         const { phone, mail, name, password } = req.body;
         let infoStaff = await User.findOne({
@@ -248,7 +248,7 @@ const editStaff = async (req, res) => {
 
 const addStaff = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { phone, password, name, mail } = req.body;
         if (phone === '' || password === '' || name === '') {
             return res.status(400).json({ isSuccess: false, mes: 'addStaff1' });
@@ -675,9 +675,9 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
     return { topNames, topToppings, countProducts, countToppings, countProductWithTopping };
 };
 
-const getSixMonthInputAndOuput = async (req, res) => {
+const getSixMonthInputAndOutput = async (req, res) => {
     try {
-        //const staff = req.staff
+        //const staff = req.user
         var currentDate = moment();
 
         var dateRangeArray = [];
@@ -762,7 +762,7 @@ const editIngredient = async (req, res) => {
 };
 const editManager = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { idStaff } = req.params;
         const { phone, name, password } = req.body;
 
@@ -795,7 +795,7 @@ const editManager = async (req, res) => {
 };
 const editShop = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { address, image, latitude, longitude, isActive } = req.body;
 
         let infoShop = await Shop.findOne();
@@ -828,7 +828,7 @@ const editShop = async (req, res) => {
 
 const addManager = async (req, res) => {
     try {
-        const staff = req.staff;
+        const staff = req.user;
         const { phone, password, name } = req.body;
         if (phone === '' || password === '' || name === '') {
             return res.status(400).json({ isSuccess: false, mes: 'addManager1' });
@@ -1033,7 +1033,7 @@ const getIngredientByIdRecipeAdmin = async (idRecipe) => {
 };
 const detailRecipeAdmin = async (req, res) => {
     try {
-        //const staff = req.staff
+        //const staff = req.user
         const { idRecipe } = req.params;
 
         if (idRecipe === '' || isNaN(idRecipe)) {
@@ -1092,7 +1092,7 @@ module.exports = {
     deleteStaff,
 
     editManager,
-    getSixMonthInputAndOuput,
+    getSixMonthInputAndOutput,
     editShop,
     getListIngredient,
     addIngredient,

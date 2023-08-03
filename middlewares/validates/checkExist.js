@@ -66,7 +66,7 @@ const checkExistAccount = () => {
     return async (req, res, next) => {
         try {
             //console.log(1)
-            //const staff = req.staff
+            //const staff = req.user
             const { username } = req.body;
             if (username === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
@@ -354,7 +354,7 @@ const checkExistInvoiceStatus = (status) => {
 const checkExistIngredientShop = () => {
     return async (req, res, next) => {
         try {
-            const staff = req.staff;
+            const staff = req.user;
             const { idIngredient } = req.params;
 
             if (idIngredient === '') {
@@ -386,7 +386,7 @@ const checkExistIngredientShop = () => {
 const checkNotExistAccount = () => {
     return async (req, res, next) => {
         try {
-            //const staff = req.staff
+            //const staff = req.user
             const { phone, mail } = req.body;
             if (phone === '' || mail === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
@@ -416,7 +416,7 @@ const checkNotExistShopWithLatitudeAndLongitude = () => {
     return async (req, res, next) => {
         try {
             //console.log(1)
-            //const staff = req.staff
+            //const staff = req.user
             let { latitude, longitude } = req.body;
             latitude = latitude.replace(/\s/g, '');
             longitude = longitude.replace(/\s/g, '');
