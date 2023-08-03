@@ -21,7 +21,7 @@ const {
     deleteRecipeType,
 } = require('../controllers/admin.controllers');
 const {
-    checkNotExistAcount,
+    checkNotExistAccount,
     checkExistAccount,
     checkNotExistShopWithLatitudeAndLongitude,
     checkExistIngredient,
@@ -30,12 +30,23 @@ const {
 } = require('../middlewares/validates/checkExist');
 const { authorize } = require('../middlewares/auth/authorize.js');
 const { authenticate } = require('../middlewares/auth/authenticate.js');
-const { getReportByDate } = require('../controllers/manager.controllers');
+const {
+    getReportByDate,
+    getListStaff,
+    addStaff,
+    editStaff,
+    deleteStaff,
+} = require('../controllers/manager.controllers');
 const adminRouter = express.Router();
 
-// adminRouter.post("/addManager", authenticate, authorize(3), checkNotExistAcount(), addManager)
+// adminRouter.post("/addManager", authenticate, authorize(3), checkNotExistAccount(), addManager)
 adminRouter.patch('/editRecipe/:idRecipe', authenticate, authorize(2), editRecipe);
 adminRouter.get('/reportByDate/:date', authenticate, authorize(2), getReportByDate);
+adminRouter.get('/getListStaff', authenticate, authorize(2), getListStaff);
+adminRouter.post('/addStaff', authenticate, authorize(2), checkNotExistAccount(), addStaff);
+adminRouter.patch('/editStaff/:idUser', authenticate, authorize(2), editStaff);
+adminRouter.delete('/deleteStaff', authenticate, authorize(2), checkExistAccount(), deleteStaff);
+
 adminRouter.patch('/editManager/:idStaff', authenticate, authorize(2), editManager);
 adminRouter.delete('/deleteManager', authenticate, authorize(2), checkExistAccount(), deleteManager);
 adminRouter.get('/getListIngredient', authenticate, authorize(2), getListIngredient);

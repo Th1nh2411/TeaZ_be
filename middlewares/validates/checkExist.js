@@ -383,16 +383,15 @@ const checkExistIngredientShop = () => {
         }
     };
 };
-const checkNotExistAcount = () => {
+const checkNotExistAccount = () => {
     return async (req, res, next) => {
         try {
             //const staff = req.staff
             const { phone, mail } = req.body;
-
             if (phone === '' || mail === '') {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
             }
-            if (isNaN(phone)) {
+            if (phone === undefined || mail === undefined) {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc2' });
             }
 
@@ -455,7 +454,7 @@ module.exports = {
     checkExistInvoiceLessThan3,
     checkExistInvoiceStatus,
     checkExistIngredientShop,
-    checkNotExistAcount,
+    checkNotExistAccount,
     checkNotExistShopWithLatitudeAndLongitude,
     checkExistIngredient,
     checkExistIngredientAndRecipe,

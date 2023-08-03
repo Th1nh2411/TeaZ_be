@@ -33,12 +33,8 @@ const { authorize } = require('../middlewares/auth/authorize.js');
 const { authenticate } = require('../middlewares/auth/authenticate.js');
 const managerRouter = express.Router();
 
-managerRouter.post('/addStaff', authenticate, authorize(2), checkNotExistAcount(), addStaff);
-managerRouter.patch('/editStaff/:idStaff', authenticate, authorize(2), editStaff);
-managerRouter.delete('/deleteStaff', authenticate, authorize(2), checkExistAccount(), deleteStaff);
 managerRouter.get('/detailChangeIngredientShop/:date', authenticate, authorize(2), getDetailChangeIngredientShop);
 managerRouter.get('/getDataForChart', authenticate, authorize(2), getSixMonthInputAndOuput);
-managerRouter.get('/getListStaff', authenticate, authorize(2), getListStaff);
 
 // managerRouter.post('/addManager', authenticate, authorize(3), checkNotExistAcount(), addManager);
 managerRouter.patch('/editManager/:idStaff', authenticate, authorize(3), editManager);

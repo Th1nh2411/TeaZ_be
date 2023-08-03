@@ -7,6 +7,7 @@ const {
     Recipe_ingredient,
     Invoice,
     Staff,
+    User,
     Account,
     Import,
     Export,
@@ -17,7 +18,7 @@ const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone'); // require
 const { getInvoiceProduct } = require('./order.controllers');
 
-const createStaffWithTransaction = async (phone, password, name, role) => {
+const createStaffWithTransaction = async (phone, password, name, mail) => {
     //console.log('test1')
     const t = await db.sequelize.transaction(); // Bắt đầu transaction
 
@@ -26,21 +27,20 @@ const createStaffWithTransaction = async (phone, password, name, role) => {
         //console.log('test2')
         const salt = bcrypt.genSaltSync(10);
         const hashPassword = bcrypt.hashSync(password, salt);
-        //console.log('test3')
+        console.log('test3');
         const newAccount = await Account.create(
             {
                 phone,
                 role: 1,
+                mail,
                 password: hashPassword,
             },
             { transaction: t },
         );
-        //console.log('test4')
-        const newStaff = await Staff.create(
+        const newStaff = await User.create(
             {
                 idAcc: newAccount.idAcc,
                 name,
-                isShare: 1,
             },
             { transaction: t },
         );
@@ -81,7 +81,6 @@ const getReportByDate = async (req, res) => {
         if (date === '') {
             return res.status(400).json({ isSuccess: false });
         }
-
         let invoices = await Invoice.findAll({
             where: {
                 date: {
@@ -92,20 +91,19 @@ const getReportByDate = async (req, res) => {
                     [Op.ne]: 0,
                 },
             },
-            attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
+            attributes: ['idInvoice', 'date', 'status', 'idUser', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let products = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
-
-                detail,
+                products,
             };
         });
 
@@ -169,24 +167,24 @@ const getDetailChangeIngredientShop = async (req, res) => {
 const getListStaff = async (req, res) => {
     try {
         const staff = req.staff;
-
-        let listStaffs = await Staff.findAll({
-            attributes: ['idStaff', 'name'],
+        let listStaffs = await User.findAll({
             include: [
                 {
                     model: Account,
-                    attributes: ['role', 'phone'],
+                    where: { role: { [Op.gt]: 0 } },
+                    attributes: ['role', 'phone', 'mail'],
                 },
             ],
             raw: true,
         });
-
+        console.log(listStaffs);
         listStaffs = listStaffs.map((item) => {
             return {
-                idStaff: item['idStaff'],
+                idUser: item['idUser'],
                 name: item['name'],
                 role: item['Account.role'],
                 phone: item['Account.phone'],
+                mail: item['Account.mail'],
             };
         });
         return res.status(200).json({ isSuccess: true, listStaffs });
@@ -214,31 +212,31 @@ const deleteStaff = async (req, res) => {
 const editStaff = async (req, res) => {
     try {
         const staff = req.staff;
-        const { idStaff } = req.params;
-        const { phone, name, password } = req.body;
-        console.log(2);
-        console.log(idStaff);
-        let infoStaff = await Staff.findOne({
-            where: { idStaff: idStaff },
+        const { idUser } = req.params;
+        const { phone, mail, name, password } = req.body;
+        let infoStaff = await User.findOne({
+            where: { idUser },
         });
-        console.log(1);
         if (!infoStaff) return res.status(409).send({ isSuccess: false, mes: 'Nhân viên không tồn tại' });
         let account = await Account.findOne({
-            where: { idAcc: infoStaff.idAcc },
+            where: { idAcc: infoStaff.idAcc, role: 1 },
         });
         if (!account) return res.status(409).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
 
-        if (phone) {
-            account.phone = phone;
-        }
-
         if (name) {
             infoStaff.name = name;
+        }
+
+        if (phone) {
+            account.phone = phone;
         }
         if (password) {
             const salt = bcrypt.genSaltSync(10);
             const hashPassword = bcrypt.hashSync(password, salt);
             account.password = hashPassword;
+        }
+        if (mail) {
+            account.mail = mail;
         }
         await account.save();
         await infoStaff.save();
@@ -251,14 +249,14 @@ const editStaff = async (req, res) => {
 const addStaff = async (req, res) => {
     try {
         const staff = req.staff;
-        const { phone, password, name } = req.body;
+        const { phone, password, name, mail } = req.body;
         if (phone === '' || password === '' || name === '') {
             return res.status(400).json({ isSuccess: false, mes: 'addStaff1' });
         }
         if (isNaN(phone) || password === undefined || name === undefined) {
             return res.status(400).json({ isSuccess: false, mes: 'addStaff2' });
         }
-        let isSuccess = await createStaffWithTransaction(phone, password, name, 1);
+        let isSuccess = await createStaffWithTransaction(phone, password, name, mail);
 
         return res.status(200).json({ isSuccess });
     } catch (error) {
@@ -619,7 +617,7 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
     //let total =0
     const toppingCounts = {};
     listInvoices.forEach((invoice) => {
-        invoice.detail.forEach((recipe) => {
+        invoice.products.forEach((recipe) => {
             const name = recipe.name;
             const idRecipe = recipe.idRecipe;
             const quantityProduct = recipe.quantityProduct;
@@ -640,7 +638,7 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
             recipe.listTopping.forEach((item) => {
                 const nameTopping = item.name;
                 const idItem = item.idRecipe;
-                const quantity = item.quantity * quantityProduct;
+                const quantity = quantityProduct;
                 const imageTopping = item.image;
                 countToppings += quantity;
                 if (toppingCounts[nameTopping]) {
