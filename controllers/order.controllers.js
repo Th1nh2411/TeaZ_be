@@ -1,8 +1,5 @@
-const { raw, text } = require('body-parser');
 const db = require('../models/index');
 const {
-    Shop,
-
     Recipe,
     Recipe_type,
     Cart,

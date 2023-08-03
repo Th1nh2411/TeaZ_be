@@ -1,6 +1,7 @@
-const { Shop } = require('../models');
-const geolib = require('geolib');
+const { Account } = require('../models');
 const bcrypt = require('bcryptjs');
+const { Op } = require('sequelize');
+
 const getUserInfo = async (req, res) => {
     try {
         const user = req.user;
@@ -15,6 +16,16 @@ const editUserInfo = async (req, res) => {
         const { name, mail, phone, password } = req.body;
         const user = req.user;
         const account = req.account;
+        const accountUpdate = await Account.findOne({
+            where: {
+                [Op.or]: [{ phone: phone ? phone : '' }, { mail: mail ? mail : '' }],
+            },
+        });
+
+        //console.log(created)
+        if (accountUpdate) {
+            return res.status(409).send({ isSuccess: false, mes: 'Tài khoản đã tồn tại' });
+        }
         if (name) {
             user.name = name;
         }

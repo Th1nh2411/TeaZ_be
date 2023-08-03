@@ -13,8 +13,8 @@ const {
 } = require('../models');
 const db = require('../models/index');
 const { QueryTypes, Op, where, sequelize } = require('sequelize');
+const geolib = require('geolib');
 const moment = require('moment-timezone'); // require
-const { raw } = require('body-parser');
 
 const getIngredientByIdRecipe = async (idRecipe) => {
     let ingredients = await Recipe_ingredient.findAll({
@@ -367,9 +367,7 @@ const getShopInfo = async (req, res) => {
             attributes: ['address', 'image', 'isActive', 'latitude', 'longitude'],
             raw: true,
         });
-        console.log(currentLocation, shop);
         const distance = geolib.getDistance(currentLocation, { latitude: shop.latitude, longitude: shop.longitude });
-        //console.log(listShop)
         if (!shop) {
             return res.status(500).json({ error: 'Không tìm thấy cửa hàng' });
         }

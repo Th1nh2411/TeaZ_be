@@ -210,7 +210,7 @@ const forgotPassword = async (req, res) => {
             return res.status(200).json({
                 isExist: true,
                 isSuccess: true,
-                message: `Mã xác minh đã được gửi về email: ${account.mail} vui lòng kiểm tra hòm thư!`,
+                message: `Mã xác minh đã được gửi về email: ${account.mail}. Vui lòng kiểm tra hòm thư!`,
             });
         }
     } catch (error) {

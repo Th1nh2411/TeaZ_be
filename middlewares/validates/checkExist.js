@@ -395,20 +395,28 @@ const checkNotExistAccount = () => {
                 return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc2' });
             }
 
-            const account = await Account.findOne({
+            const accountMail = await Account.findOne({
                 where: {
-                    [Op.or]: [{ phone: phone }, { mail: mail }],
+                    mail: mail,
                 },
             });
-
+            const accountPhone = await Account.findOne({
+                where: {
+                    phone: phone,
+                },
+            });
             //console.log(created)
-            if (account) {
-                return res.status(409).send({ isSuccess: false, mes: 'Tài khoản đã tồn tại' });
+            if (accountPhone) {
+                return res
+                    .status(409)
+                    .send({ isSuccess: false, message: 'Số điện thoại này đã được đăng kí', existPhone: true });
+            } else if (accountMail) {
+                return res.status(409).send({ isSuccess: false, message: 'Mail này đã được đăng kí', existMail: true });
             } else {
                 next();
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'Có lỗi trong quá trình tạo tài khoản' });
+            return res.status(500).send({ isSuccess: false, message: 'Có lỗi trong quá trình tạo tài khoản' });
         }
     };
 };
