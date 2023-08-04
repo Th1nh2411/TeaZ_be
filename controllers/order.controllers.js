@@ -15,14 +15,12 @@ const { QueryTypes, Op, where, STRING } = require('sequelize');
 const { getIngredientByIdRecipe, changeQuantityIngredientShopWithTransaction } = require('./shop.controllers');
 const moment = require('moment-timezone'); // require
 
-const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvoice) => {
+const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvoice, t) => {
     let infoChange1 = [];
     //console.log(1)
-    const t = await db.sequelize.transaction(); // Bắt đầu transaction
     let ingredients = await getIngredientByIdRecipe(idRecipe);
     async function processIngredientsRecursive(index) {
         if (index >= ingredients.length) {
-            await t.commit(); // Lưu thay đổi và kết thúc transaction
             return; // Kết thúc đệ quy khi đã xử lý hết tất cả các phần tử
         }
 
@@ -60,6 +58,7 @@ const changeIngredientByIdRecipe = async (idRecipe, quantity, type, date, idInvo
 const changeIngredientByCart = async (invoice, type, date) => {
     let infoChange = [];
     //let quantity = 0
+    const t = await db.sequelize.transaction(); // Bắt đầu transaction
     let cart = await Cart.findAll({
         where: {
             idUser: invoice.idUser,
@@ -85,9 +84,10 @@ const changeIngredientByCart = async (invoice, type, date) => {
     for (const item of cart) {
         let idRecipe = Number(item['Cart_products.Product.Recipe.idRecipe']);
         let quantity = Number(item['Cart_products.quantity']);
-        let info = await changeIngredientByIdRecipe(idRecipe, quantity, type, date, invoice.idInvoice);
+        let info = await changeIngredientByIdRecipe(idRecipe, quantity, type, date, invoice.idInvoice, t);
         infoChange.push(...info);
     }
+    await t.commit(); // Lưu thay đổi và kết thúc transaction
 
     return infoChange;
 };
@@ -548,7 +548,8 @@ const getCurrentInvoice = async (req, res) => {
     try {
         const user = req.user;
         const invoice = await Invoice.findOne({
-            where: { status: { [Op.lt]: 3, idUser: user.idUser } },
+            where: { status: { [Op.lt]: 3 } },
+            idUser: user.idUser,
         });
         if (invoice == null) {
             return res.status(200).json({ isSuccess: true, invoice });
@@ -638,6 +639,7 @@ const createInvoice = async (req, res) => {
         } catch (error) {
             isSuccess = false;
             await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction7
+            return res.status(200).json({ isSuccess, runOut: true });
         }
 
         //console.log(listTopping)
