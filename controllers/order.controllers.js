@@ -231,7 +231,7 @@ const getInvoiceProduct = async (idInvoice) => {
             name: item['Product.Recipe.name'],
             idProduct: item['idProduct'],
             size: item['size'],
-            quantityProduct: item['quantity'],
+            quantity: item['quantity'],
             image: item['Product.Recipe.image'],
             idRecipe: item['Product.Recipe.idRecipe'],
             listTopping,
@@ -517,7 +517,6 @@ const cancelInvoice = async (req, res) => {
         const invoice = await Invoice.findOne({
             where: { status: { [Op.lt]: 3 }, idUser: user.idUser },
         });
-
         if (invoice.status < 2) {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
             console.log(1);
@@ -528,18 +527,18 @@ const cancelInvoice = async (req, res) => {
             });
             await invoice.destroy();
             if (invoice.status == 0) {
-                return res.status(200).json({ isSuccess: true, isCancel: true, mes: 'Đã huỷ thành công hoá đơn' });
+                return res.status(200).json({ isSuccess: true, isCancel: true, message: 'Đã huỷ thành công hoá đơn' });
             } else {
                 return res.status(200).json({
                     isSuccess: true,
                     isCancel: true,
-                    mes: 'Đã huỷ thành công hoá đơn. Hệ thống sẽ hoàn tiền cho quý khách trong vòng 24h',
+                    message: 'Đã huỷ thành công hoá đơn. Hệ thống sẽ hoàn tiền cho quý khách trong vòng 24h',
                 });
             }
         } else {
             return res
                 .status(200)
-                .json({ isSuccess: true, isCancel: false, mes: 'Đơn đang được giao. Không thể huỷ hoá đơn' });
+                .json({ isSuccess: true, isCancel: false, message: 'Đơn đang được giao. Không thể huỷ hoá đơn' });
         }
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
@@ -762,11 +761,11 @@ const getAllOrder = async (req, res) => {
 const searchRecipe = async (req, res) => {
     try {
         if (req.query.name === '' || req.query.limit === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'searchRecipe1' });
+            return res.status(400).json({ isSuccess: false, message: 'searchRecipe1' });
         }
 
         if (isNaN(req.query.limit) || req.query.name === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'searchRecipe2' });
+            return res.status(400).json({ isSuccess: false, message: 'searchRecipe2' });
         }
 
         const name = req.query.name;
@@ -779,25 +778,7 @@ const searchRecipe = async (req, res) => {
             attributes: ['idRecipe', 'name', 'image', 'price', 'discount'],
             limit: limit,
             raw: true,
-            // include: [
-            //     {
-            //         model: Recipe_shop,
-            //         where: { isActive: 1 },
-            //         required: true,
-            //         attributes: ['discount'],
-            //     },
-            // ],
         });
-        console.log(recipes);
-        // recipes = recipes.map((item) => {
-        //     return {
-        //         idRecipe: item['idRecipe'],
-        //         name: item['name'],
-        //         image: item['image'],
-        //         price: item['price'],
-        //         discount: item['discount'],
-        //     };
-        // });
 
         res.status(200).json({
             recipes,

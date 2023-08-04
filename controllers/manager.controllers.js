@@ -74,7 +74,7 @@ const getReportByDate = async (req, res) => {
         if (type == 'day' || type == 'month' || type == 'year') {
             startDate = moment(date).startOf(type).toDate();
             endDate = moment(date).endOf(type).toDate();
-        } else return res.status(400).json({ isSuccess: false, mes: 'type sai' });
+        } else return res.status(400).json({ isSuccess: false, message: 'type sai' });
         if (date === undefined) {
             return res.status(400).json({ isSuccess: false });
         }
@@ -128,7 +128,7 @@ const getReportByDate = async (req, res) => {
             countInvoices,
         });
     } catch (error) {
-        res.status(500).json({ error, mes: 'reportByDate' });
+        res.status(500).json({ error, message: 'reportByDate' });
     }
 };
 const getDetailChangeIngredientShop = async (req, res) => {
@@ -144,7 +144,7 @@ const getDetailChangeIngredientShop = async (req, res) => {
         if (type == 'day' || type == 'month' || type == 'year') {
             startDate = moment(date).startOf(type).toDate();
             endDate = moment(date).endOf(type).toDate();
-        } else return res.status(400).json({ isSuccess: false, mes: 'type sai' });
+        } else return res.status(400).json({ isSuccess: false, message: 'type sai' });
         if (date === undefined) {
             return res.status(400).json({ isSuccess: false });
         }
@@ -160,7 +160,7 @@ const getDetailChangeIngredientShop = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true, imports, totalAmountImport, exportsBH, exportsWithoutBH });
     } catch (error) {
-        res.status(500).json({ error, mes: 'reportByDate' });
+        res.status(500).json({ error, message: 'reportByDate' });
     }
 };
 
@@ -189,7 +189,7 @@ const getListStaff = async (req, res) => {
         });
         return res.status(200).json({ isSuccess: true, listStaffs });
     } catch (error) {
-        res.status(500).json({ error, mes: 'getListStaff' });
+        res.status(500).json({ error, message: 'getListStaff' });
     }
 };
 const deleteStaff = async (req, res) => {
@@ -206,7 +206,7 @@ const deleteStaff = async (req, res) => {
             return res.status(200).json({ isSuccess });
         } else return res.status(403).json({ message: 'Bạn không có quyền sử dụng chức năng này!' });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editStaff' });
+        res.status(500).json({ error, message: 'editStaff' });
     }
 };
 const editStaff = async (req, res) => {
@@ -217,11 +217,11 @@ const editStaff = async (req, res) => {
         let infoStaff = await User.findOne({
             where: { idUser },
         });
-        if (!infoStaff) return res.status(409).send({ isSuccess: false, mes: 'Nhân viên không tồn tại' });
+        if (!infoStaff) return res.status(409).send({ isSuccess: false, message: 'Nhân viên không tồn tại' });
         let account = await Account.findOne({
             where: { idAcc: infoStaff.idAcc, role: 1 },
         });
-        if (!account) return res.status(409).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
+        if (!account) return res.status(409).send({ isSuccess: false, message: 'Tài khoản không tồn tại' });
 
         if (name) {
             infoStaff.name = name;
@@ -242,7 +242,7 @@ const editStaff = async (req, res) => {
         await infoStaff.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editStaff' });
+        res.status(500).json({ error, message: 'editStaff' });
     }
 };
 
@@ -251,16 +251,16 @@ const addStaff = async (req, res) => {
         const staff = req.user;
         const { phone, password, name, mail } = req.body;
         if (phone === '' || password === '' || name === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'addStaff1' });
+            return res.status(400).json({ isSuccess: false, message: 'addStaff1' });
         }
         if (isNaN(phone) || password === undefined || name === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'addStaff2' });
+            return res.status(400).json({ isSuccess: false, message: 'addStaff2' });
         }
         let isSuccess = await createStaffWithTransaction(phone, password, name, mail);
 
         return res.status(200).json({ isSuccess });
     } catch (error) {
-        res.status(500).json({ error, mes: 'getListStaff' });
+        res.status(500).json({ error, message: 'getListStaff' });
     }
 };
 const deleteStaffWithTransaction = async (account, staff) => {
@@ -700,7 +700,7 @@ const getSixMonthInputAndOutput = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true, listTotalAndTotalAmountImport });
     } catch (error) {
-        res.status(500).json({ error, mes: 'reportByDate' });
+        res.status(500).json({ error, message: 'reportByDate' });
     }
 };
 
@@ -729,7 +729,7 @@ const getListManager = async (req, res) => {
         });
         return res.status(200).json({ isSuccess: true, listStaffs });
     } catch (error) {
-        res.status(500).json({ error, mes: 'getListStaff' });
+        res.status(500).json({ error, message: 'getListStaff' });
     }
 };
 
@@ -757,7 +757,7 @@ const editIngredient = async (req, res) => {
         await ingredient.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editManager' });
+        res.status(500).json({ error, message: 'editManager' });
     }
 };
 const editManager = async (req, res) => {
@@ -769,11 +769,11 @@ const editManager = async (req, res) => {
         let infoStaff = await Staff.findOne({
             where: { idStaff: idStaff },
         });
-        if (!infoStaff) return res.status(409).send({ isSuccess: false, mes: 'Nhân viên không tồn tại' });
+        if (!infoStaff) return res.status(409).send({ isSuccess: false, message: 'Nhân viên không tồn tại' });
         let account = await Account.findOne({
             where: { idAcc: infoStaff.idAcc },
         });
-        if (!account) return res.status(409).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
+        if (!account) return res.status(409).send({ isSuccess: false, message: 'Tài khoản không tồn tại' });
         if (phone) {
             account.phone = phone;
         }
@@ -790,7 +790,7 @@ const editManager = async (req, res) => {
         await infoStaff.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editManager' });
+        res.status(500).json({ error, message: 'editManager' });
     }
 };
 const editShop = async (req, res) => {
@@ -800,7 +800,7 @@ const editShop = async (req, res) => {
 
         let infoShop = await Shop.findOne();
         //console.log(1)
-        if (!infoShop) return res.status(409).send({ isSuccess: false, mes: 'Shop không tồn tại' });
+        if (!infoShop) return res.status(409).send({ isSuccess: false, message: 'Shop không tồn tại' });
         if (image) {
             infoShop.image = image;
         }
@@ -813,7 +813,9 @@ const editShop = async (req, res) => {
         }
         if (latitude && longitude && address) {
             if (isNaN(latitude) || isNaN(longitude))
-                return res.status(400).json({ isSuccess: false, mes: 'Một trong hai lati hoặc longi không phải số' });
+                return res
+                    .status(400)
+                    .json({ isSuccess: false, message: 'Một trong hai lati hoặc longi không phải số' });
             infoShop.latitude = Number(latitude);
             infoShop.longitude = Number(longitude);
             infoShop.address = address;
@@ -822,7 +824,7 @@ const editShop = async (req, res) => {
         await infoShop.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editShop' });
+        res.status(500).json({ error, message: 'editShop' });
     }
 };
 
@@ -831,16 +833,16 @@ const addManager = async (req, res) => {
         const staff = req.user;
         const { phone, password, name } = req.body;
         if (phone === '' || password === '' || name === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'addManager1' });
+            return res.status(400).json({ isSuccess: false, message: 'addManager1' });
         }
         if (isNaN(phone) || password === undefined || name === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'addManager2' });
+            return res.status(400).json({ isSuccess: false, message: 'addManager2' });
         }
         let isSuccess = await createManagerWithTransaction(phone, password, name);
 
         return res.status(200).json({ isSuccess });
     } catch (error) {
-        res.status(500).json({ error, mes: 'addManager' });
+        res.status(500).json({ error, message: 'addManager' });
     }
 };
 
@@ -850,17 +852,17 @@ const getListIngredient = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true, listIngredient });
     } catch (error) {
-        res.status(500).json({ error, mes: 'getListIngredient' });
+        res.status(500).json({ error, message: 'getListIngredient' });
     }
 };
 const addIngredient = async (req, res) => {
     try {
         const { image, unitName, name } = req.body;
         if (image === '' || unitName === '' || name === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'addIngredient1' });
+            return res.status(400).json({ isSuccess: false, message: 'addIngredient1' });
         }
         if (image === undefined || unitName === undefined || name === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'addIngredient2' });
+            return res.status(400).json({ isSuccess: false, message: 'addIngredient2' });
         }
         const newIngredient = await Ingredient.create({
             name,
@@ -870,7 +872,7 @@ const addIngredient = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'addIngredient' });
+        res.status(500).json({ error, message: 'addIngredient' });
     }
 };
 const addRecipe = async (req, res) => {
@@ -887,7 +889,7 @@ const addRecipe = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'addIngredient' });
+        res.status(500).json({ error, message: 'addIngredient' });
     }
 };
 const editRecipe = async (req, res) => {
@@ -913,7 +915,7 @@ const editRecipe = async (req, res) => {
                     idType: idType,
                 },
             });
-            if (!type) return res.status(400).json({ isSuccess: false, mes: 'Không tồn tại idType này' });
+            if (!type) return res.status(400).json({ isSuccess: false, message: 'Không tồn tại idType này' });
             infoRecipe.idType = idType;
         }
         if (price) {
@@ -923,7 +925,7 @@ const editRecipe = async (req, res) => {
         await infoRecipe.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editManager' });
+        res.status(500).json({ error, message: 'editManager' });
     }
 };
 const editRecipeIngredient = async (req, res) => {
@@ -939,9 +941,9 @@ const editRecipeIngredient = async (req, res) => {
             },
         });
         if (isNaN(quantity))
-            return res.status(400).json({ isSuccess: false, mes: 'quantity phải là số và lớn hơn bằng 0' });
+            return res.status(400).json({ isSuccess: false, message: 'quantity phải là số và lớn hơn bằng 0' });
         if (Number(quantity) < 0)
-            return res.status(400).json({ isSuccess: false, mes: 'quantity phải là số và lớn hơn bằng 0' });
+            return res.status(400).json({ isSuccess: false, message: 'quantity phải là số và lớn hơn bằng 0' });
         if (Number(quantity) == 0) {
             await recipe_ingredient.destroy();
             return res.status(200).json({ isSuccess: true });
@@ -950,7 +952,7 @@ const editRecipeIngredient = async (req, res) => {
         await recipe_ingredient.save();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'editManager' });
+        res.status(500).json({ error, message: 'editManager' });
     }
 };
 const addRecipeType = async (req, res) => {
@@ -967,7 +969,7 @@ const addRecipeType = async (req, res) => {
         if (!recipe_type) return res.status(400).json({ isSuccess: true });
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'addRecipeType' });
+        res.status(500).json({ error, message: 'addRecipeType' });
     }
 };
 const deleteRecipeType = async (req, res) => {
@@ -982,11 +984,11 @@ const deleteRecipeType = async (req, res) => {
             },
         });
         if (!recipe_type)
-            return res.status(404).json({ isSuccess: true, mes: 'Không tồn tại liên kết recipe_type này' });
+            return res.status(404).json({ isSuccess: true, message: 'Không tồn tại liên kết recipe_type này' });
         await recipe_type.destroy();
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, mes: 'addRecipeType' });
+        res.status(500).json({ error, message: 'addRecipeType' });
     }
 };
 const getListRecipeAdmin = async (req, res) => {
@@ -1006,7 +1008,7 @@ const getListRecipeAdmin = async (req, res) => {
         }
         return res.status(200).json({ isSuccess: true, listRecipes });
     } catch (error) {
-        res.status(500).json({ error, mes: 'getListRecipeAdmin' });
+        res.status(500).json({ error, message: 'getListRecipeAdmin' });
     }
 };
 
@@ -1037,7 +1039,7 @@ const detailRecipeAdmin = async (req, res) => {
         const { idRecipe } = req.params;
 
         if (idRecipe === '' || isNaN(idRecipe)) {
-            return res.status(400).json({ isSuccess: false, mes: 'detailRecipeAdmin1' });
+            return res.status(400).json({ isSuccess: false, message: 'detailRecipeAdmin1' });
         }
 
         let detailRecipe = await Recipe.findOne({

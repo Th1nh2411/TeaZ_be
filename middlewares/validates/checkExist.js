@@ -1,21 +1,8 @@
-const {
-    Account,
-    Product,
-    Cart,
-    Cart_product,
-    Type,
-    Invoice,
-    Ingredient_shop,
-    Shop,
-    Ingredient,
-    Recipe,
-    User,
-} = require('../../models');
+const { Account, Product, Cart, Cart_product, Type, Invoice, Shop, Ingredient, Recipe, User } = require('../../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const createProduct = async (idProduct) => {
     let recipeList = idProduct.substring(1);
     recipeList = recipeList.split(','); // Tách các  idRecipe
-    console.log(1);
     console.log(recipeList);
     let createdProducts = [];
     // Duyệt qua từng cặp idRecipe
@@ -69,10 +56,10 @@ const checkExistAccount = () => {
             //const staff = req.user
             const { username } = req.body;
             if (username === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
+                return res.status(400).json({ isSuccess: false, message: 'checkNotExistAcc1' });
             }
             if (username === undefined) {
-                return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc2' });
+                return res.status(400).json({ isSuccess: false, message: 'checkNotExistAcc2' });
             }
 
             const account = await Account.findOne({
@@ -82,13 +69,13 @@ const checkExistAccount = () => {
             });
 
             if (!account) {
-                return res.status(404).send({ isSuccess: false, mes: 'Tài khoản không tồn tại' });
+                return res.status(404).send({ isSuccess: false, message: 'Tài khoản không tồn tại' });
             } else {
                 req.account = account;
                 next();
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'Có lỗi trong quá trình sửa tài khoản' });
+            return res.status(500).send({ isSuccess: false, message: 'Có lỗi trong quá trình sửa tài khoản' });
         }
     };
 };
@@ -98,10 +85,10 @@ const checkExistIngredient = () => {
             const { idIngredient } = req.params;
 
             if (idIngredient === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'checkExistIngredient1' });
+                return res.status(400).json({ isSuccess: false, message: 'checkExistIngredient1' });
             }
             if (isNaN(idIngredient)) {
-                return res.status(400).json({ isSuccess: false, mes: 'checkExistIngredient2' });
+                return res.status(400).json({ isSuccess: false, message: 'checkExistIngredient2' });
             }
 
             const ingredient = await Ingredient.findOne({
@@ -112,13 +99,13 @@ const checkExistIngredient = () => {
 
             //console.log(created)
             if (!ingredient) {
-                return res.status(404).send({ isSuccess: false, mes: 'Ingredient không tồn tại' });
+                return res.status(404).send({ isSuccess: false, message: 'Ingredient không tồn tại' });
             } else {
                 req.ingredient = ingredient;
                 next();
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'Có lỗi trong quá trình sửa ingredient' });
+            return res.status(500).send({ isSuccess: false, message: 'Có lỗi trong quá trình sửa ingredient' });
         }
     };
 };
@@ -128,10 +115,10 @@ const checkExistTypeAndRecipe = () => {
             const { idRecipe, idType } = req.body;
 
             if (idRecipe === '' || idType === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'checkExistTypeAndRecipe1' });
+                return res.status(400).json({ isSuccess: false, message: 'checkExistTypeAndRecipe1' });
             }
             if (isNaN(idRecipe) || isNaN(idType)) {
-                return res.status(400).json({ isSuccess: false, mes: 'checkExistTypeAndRecipe2' });
+                return res.status(400).json({ isSuccess: false, message: 'checkExistTypeAndRecipe2' });
             }
 
             const type = await Type.findOne({
@@ -146,13 +133,13 @@ const checkExistTypeAndRecipe = () => {
             });
             //console.log(created)
             if (!type) {
-                return res.status(404).send({ isSuccess: false, mes: 'Type không tồn tại' });
+                return res.status(404).send({ isSuccess: false, message: 'Type không tồn tại' });
             } else {
                 if (recipe.idType == type.idType)
                     return res
                         .status(400)
-                        .send({ isSuccess: false, mes: 'Không chọn recipe có type trùng với type chọn' });
-                if (!recipe) return res.status(404).send({ isSuccess: false, mes: 'Recipe không tồn tại' });
+                        .send({ isSuccess: false, message: 'Không chọn recipe có type trùng với type chọn' });
+                if (!recipe) return res.status(404).send({ isSuccess: false, message: 'Recipe không tồn tại' });
                 else {
                     req.type = type;
                     req.recipe = recipe;
@@ -160,7 +147,9 @@ const checkExistTypeAndRecipe = () => {
                 }
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'Có lỗi trong quá trình checkExistRecipeAndType' });
+            return res
+                .status(500)
+                .send({ isSuccess: false, message: 'Có lỗi trong quá trình checkExistRecipeAndType' });
         }
     };
 };
@@ -170,10 +159,10 @@ const checkExistIngredientAndRecipe = () => {
             const { idRecipe, idIngredient } = req.body;
 
             if (idIngredient === '' || idRecipe === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'checkExistIngredientAndRecipe1' });
+                return res.status(400).json({ isSuccess: false, message: 'checkExistIngredientAndRecipe1' });
             }
             if (isNaN(idIngredient) || isNaN(idRecipe)) {
-                return res.status(400).json({ isSuccess: false, mes: 'checkExistIngredientAndRecipe2' });
+                return res.status(400).json({ isSuccess: false, message: 'checkExistIngredientAndRecipe2' });
             }
 
             const ingredient = await Ingredient.findOne({
@@ -188,9 +177,9 @@ const checkExistIngredientAndRecipe = () => {
             });
             //console.log(created)
             if (!ingredient) {
-                return res.status(404).send({ isSuccess: false, mes: 'Ingredient không tồn tại' });
+                return res.status(404).send({ isSuccess: false, message: 'Ingredient không tồn tại' });
             } else {
-                if (!recipe) return res.status(404).send({ isSuccess: false, mes: 'Recipe không tồn tại' });
+                if (!recipe) return res.status(404).send({ isSuccess: false, message: 'Recipe không tồn tại' });
                 else {
                     req.ingredient = ingredient;
                     req.recipe = recipe;
@@ -200,7 +189,7 @@ const checkExistIngredientAndRecipe = () => {
         } catch (error) {
             return res
                 .status(500)
-                .send({ isSuccess: false, mes: 'Có lỗi trong quá trình checkExistIngredientAndRecipe' });
+                .send({ isSuccess: false, message: 'Có lỗi trong quá trình checkExistIngredientAndRecipe' });
         }
     };
 };
@@ -260,7 +249,7 @@ const checkExistCurrentCart = () => {
             req.currentCart = currentCart;
             next();
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, isExist: false, mes: 'check' });
+            return res.status(500).send({ isSuccess: false, isExist: false, message: 'check' });
         }
     };
 };
@@ -286,7 +275,7 @@ const checkExistProductCartAndDel = () => {
 
             //console.log('test1')
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, isExist: false, mes: 'checkAndDelProductCart' });
+            return res.status(500).send({ isSuccess: false, isExist: false, message: 'checkAndDelProductCart' });
         }
     };
 };
@@ -299,20 +288,22 @@ const checkExistInvoiceLessThan3 = () => {
             //console.log(user)
             const invoice = await Invoice.findOne({
                 where: {
-                    status: { [Op.lt]: 3, idUser: user.idUser },
+                    status: { [Op.lt]: 3 },
+                    idUser: user.idUser,
                 },
             });
-
-            if (invoice == null) {
+            if (!invoice) {
                 next();
             } else {
                 let idInvoice = invoice.idInvoice;
-                return res.status(400).json({ isSuccess: false, mes: 'Đơn hàng hiên tại chưa hoàn thành', idInvoice });
+                return res
+                    .status(400)
+                    .json({ isSuccess: false, message: 'Đơn hàng hiên tại chưa hoàn thành', idInvoice });
             }
 
             //console.log('test1')
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, isExist: false, mes: 'checkInvoiceStatus0' });
+            return res.status(500).send({ isSuccess: false, isExist: false, message: 'checkInvoiceStatus0' });
         }
     };
 };
@@ -344,10 +335,10 @@ const checkExistInvoiceStatus = (status) => {
             } else {
                 return res
                     .status(400)
-                    .json({ isSuccess: false, mes: ' idInvoice sai hoặc hoá đơn không còn ở trạng thái này' });
+                    .json({ isSuccess: false, message: ' idInvoice sai hoặc hoá đơn không còn ở trạng thái này' });
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, isExist: false, mes: 'checkInvoiceStatus0' });
+            return res.status(500).send({ isSuccess: false, isExist: false, message: 'checkInvoiceStatus0' });
         }
     };
 };
@@ -358,10 +349,10 @@ const checkExistIngredientShop = () => {
             const { idIngredient } = req.params;
 
             if (idIngredient === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'importIngredient1' });
+                return res.status(400).json({ isSuccess: false, message: 'importIngredient1' });
             }
             if (isNaN(idIngredient)) {
-                return res.status(400).json({ isSuccess: false, mes: 'importIngredient2' });
+                return res.status(400).json({ isSuccess: false, message: 'importIngredient2' });
             }
 
             let existIngredient = await Ingredient.findOne({
@@ -376,10 +367,10 @@ const checkExistIngredientShop = () => {
                 req.ingredient = existIngredient;
                 next();
             } else {
-                return res.status(500).send({ isSuccess: false, created, mes: 'Không tìm thấy nguyên liệu' });
+                return res.status(500).send({ isSuccess: false, created, message: 'Không tìm thấy nguyên liệu' });
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'có lỗi trong quá trình checkExist Ingredient' });
+            return res.status(500).send({ isSuccess: false, message: 'có lỗi trong quá trình checkExist Ingredient' });
         }
     };
 };
@@ -389,10 +380,10 @@ const checkNotExistAccount = () => {
             //const staff = req.user
             const { phone, mail } = req.body;
             if (phone === '' || mail === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc1' });
+                return res.status(400).json({ isSuccess: false, message: 'checkNotExistAcc1' });
             }
             if (phone === undefined || mail === undefined) {
-                return res.status(400).json({ isSuccess: false, mes: 'checkNotExistAcc2' });
+                return res.status(400).json({ isSuccess: false, message: 'checkNotExistAcc2' });
             }
 
             const accountMail = await Account.findOne({
@@ -430,10 +421,10 @@ const checkNotExistShopWithLatitudeAndLongitude = () => {
             longitude = longitude.replace(/\s/g, '');
 
             if (latitude === '' || longitude === '') {
-                return res.status(400).json({ isSuccess: false, mes: 'checkNotExistShop1' });
+                return res.status(400).json({ isSuccess: false, message: 'checkNotExistShop1' });
             }
             if (isNaN(latitude) || isNaN(longitude)) {
-                return res.status(400).json({ isSuccess: false, mes: 'checkNotExistShop2' });
+                return res.status(400).json({ isSuccess: false, message: 'checkNotExistShop2' });
             }
 
             const shop = await Shop.findOne({
@@ -445,12 +436,12 @@ const checkNotExistShopWithLatitudeAndLongitude = () => {
 
             //console.log(created)
             if (shop) {
-                return res.status(409).send({ isSuccess: false, mes: 'Shop đã tồn tại' });
+                return res.status(409).send({ isSuccess: false, message: 'Shop đã tồn tại' });
             } else {
                 next();
             }
         } catch (error) {
-            return res.status(500).send({ isSuccess: false, mes: 'Có lỗi trong quá trình thêm Shop' });
+            return res.status(500).send({ isSuccess: false, message: 'Có lỗi trong quá trình thêm Shop' });
         }
     };
 };

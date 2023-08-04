@@ -50,10 +50,10 @@ const createAccountForCustomer = async (req, res) => {
     try {
         const { phone, password, name, mail } = req.body;
         if (phone === '' || password === '' || name === '' || mail === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'addUser1' });
+            return res.status(400).json({ isSuccess: false, message: 'addUser1' });
         }
         if (isNaN(phone) || password === undefined || name === undefined || mail === undefined) {
-            return res.status(400).json({ isSuccess: false, mes: 'addUser2' });
+            return res.status(400).json({ isSuccess: false, message: 'addUser2' });
         }
         //tạo ra một chuỗi ngẫu nhiên
         let isSuccess = await createCustomerWithTransaction(phone, password, name, mail);

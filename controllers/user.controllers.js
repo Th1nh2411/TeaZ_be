@@ -24,7 +24,7 @@ const editUserInfo = async (req, res) => {
 
         //console.log(created)
         if (accountUpdate) {
-            return res.status(409).send({ isSuccess: false, mes: 'Tài khoản đã tồn tại' });
+            return res.status(409).send({ isSuccess: false, message: 'Tài khoản đã tồn tại' });
         }
         if (name) {
             user.name = name;

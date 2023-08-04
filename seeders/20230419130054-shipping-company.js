@@ -7,12 +7,12 @@ module.exports = {
             {
                 name: 'grab',
                 costPerKm: 5,
-                image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
+                image: 'https://thicao.com/wp-content/uploads/2019/07/logo-moi-cua-grab.jpg',
             },
             {
-                name: 'goviet',
+                name: 'nowfood',
                 costPerKm: 4,
-                image: 'https://cdn.tgdd.vn/2020/08/CookRecipe/Avatar/uc-ga-chien-gion-thumbnail.jpg',
+                image: 'https://images.squarespace-cdn.com/content/v1/5f9bdbe0209d9a7ee6ea8797/1612706541953-M447AAUK2JK58U0K8B4N/now+food+logo.jpeg',
             },
         ]);
     },

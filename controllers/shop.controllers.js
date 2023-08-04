@@ -117,7 +117,7 @@ const detailRecipe = async (req, res) => {
         const { idRecipe } = req.params;
 
         if (idRecipe === '' || isNaN(idRecipe)) {
-            return res.status(400).json({ isSuccess: false, mes: 'detailRecipe' });
+            return res.status(400).json({ isSuccess: false, message: 'detailRecipe' });
         }
 
         let recipe = await Recipe.findOne({
@@ -141,15 +141,15 @@ const editRecipeShop = async (req, res) => {
         const { idRecipe } = req.params;
         const { isActive, discount } = req.body;
         if (isActive === undefined || discount === undefined || idRecipe === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'editRecipeShop' });
+            return res.status(400).json({ isSuccess: false, message: 'editRecipeShop' });
         }
         if (isActive === '' || discount === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'editRecipeShop' });
+            return res.status(400).json({ isSuccess: false, message: 'editRecipeShop' });
         }
         //console.log(typeof(parseInt(isActive)))
         let recipe;
         if (parseInt(discount) < 0 || parseInt(discount) > 100)
-            return res.status(400).json({ isSuccess: false, mes: 'editRecipeShop' });
+            return res.status(400).json({ isSuccess: false, message: 'editRecipeShop' });
         if (isActive == 1 || isActive == 0) {
             recipe = await Recipe_shop.findOne({
                 where: {
@@ -162,11 +162,11 @@ const editRecipeShop = async (req, res) => {
                     },
                 ],
             });
-            if (!recipe) return res.status(404).send({ isSuccess: false, mes: 'Recipe không tồn tại' });
+            if (!recipe) return res.status(404).send({ isSuccess: false, message: 'Recipe không tồn tại' });
             recipe.isActive = isActive;
             recipe.discount = discount;
             await recipe.save();
-        } else return res.status(400).json({ isSuccess: false, mes: 'editRecipeShop' });
+        } else return res.status(400).json({ isSuccess: false, message: 'editRecipeShop' });
 
         return res.status(200).json({ isSuccess: true, recipe });
     } catch (error) {
@@ -268,14 +268,15 @@ const importIngredient = async (req, res) => {
         const { price, quantity } = req.body;
         const date = moment().format('YYYY-MM-DD HH:mm:ss');
         if (price === '' || quantity === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'importIngredient1' });
+            return res.status(400).json({ isSuccess: false, message: 'importIngredient1' });
         }
         if (isNaN(price) || isNaN(quantity)) {
-            return res.status(400).json({ isSuccess: false, mes: 'importIngredient2' });
+            return res.status(400).json({ isSuccess: false, message: 'importIngredient2' });
         }
         console.log('test');
 
-        if (Number(quantity) <= 0) return res.status(400).json({ isSuccess: false, mes: 'Số lượng phải lớn hơn 0' });
+        if (Number(quantity) <= 0)
+            return res.status(400).json({ isSuccess: false, message: 'Số lượng phải lớn hơn 0' });
         console.log('test2');
         let { isSuccess, infoChange } = await changeQuantityIngredientShopWithTransaction(
             ingredient,
@@ -299,13 +300,14 @@ const exportIngredient = async (req, res) => {
         const { info, quantity } = req.body;
         const date = moment().format('YYYY-MM-DD HH:mm:ss');
         if (info === '' || quantity === '') {
-            return res.status(400).json({ isSuccess: false, mes: 'exportIngredient1' });
+            return res.status(400).json({ isSuccess: false, message: 'exportIngredient1' });
         }
         if (info === undefined || isNaN(quantity)) {
-            return res.status(400).json({ isSuccess: false, mes: 'exportIngredient2' });
+            return res.status(400).json({ isSuccess: false, message: 'exportIngredient2' });
         }
 
-        if (Number(quantity) <= 0) return res.status(400).json({ isSuccess: false, mes: 'Số lượng phải lớn hơn 0' });
+        if (Number(quantity) <= 0)
+            return res.status(400).json({ isSuccess: false, message: 'Số lượng phải lớn hơn 0' });
         console.log('test');
         let { isSuccess, infoChange } = await changeQuantityIngredientShopWithTransaction(
             ingredient,
