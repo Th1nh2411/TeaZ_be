@@ -335,7 +335,7 @@ const checkExistInvoiceStatus = (status) => {
             } else {
                 return res
                     .status(400)
-                    .json({ isSuccess: false, message: ' idInvoice sai hoặc hoá đơn không còn ở trạng thái này' });
+                    .json({ isSuccess: false, message: 'Khách đã huỷ đơn hàng. Đơn hàng không còn ở trạng thái này' });
             }
         } catch (error) {
             return res.status(500).send({ isSuccess: false, isExist: false, message: 'checkInvoiceStatus0' });
