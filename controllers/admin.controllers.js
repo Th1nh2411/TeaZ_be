@@ -717,6 +717,7 @@ const addIngredient = async (req, res) => {
             name,
             image,
             unitName,
+            isActive: 1,
         });
 
         return res.status(200).json({ isSuccess: true });
@@ -726,14 +727,16 @@ const addIngredient = async (req, res) => {
 };
 const addRecipe = async (req, res) => {
     try {
-        const { image, info, name, price, idType } = req.body;
+        const { image, info, name, price, discount, idType } = req.body;
 
         const newRecipe = await Recipe.create({
             name,
             image,
             info,
             price,
+            discount,
             idType,
+            isActive: 0,
         });
 
         return res.status(200).json({ isSuccess: true });
