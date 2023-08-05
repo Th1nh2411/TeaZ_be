@@ -21,7 +21,7 @@ const { searchRecipe } = require('../controllers/recipe.controllers');
 const shopRouter = express.Router();
 
 shopRouter.get('/type', menuByTypeForUser);
-// shopRouter.get('/getListToppingByType', getListToppingByType);
+shopRouter.get('/getListToppingByType', getListToppingByType);
 shopRouter.get('/searchInShop', searchRecipe);
 shopRouter.get('/typeForStaff', authenticate, authorize(1), menuByTypeForStaff);
 shopRouter.get('/listIngredientShop', authenticate, authorize(1), getListIngredient);

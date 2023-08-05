@@ -3,10 +3,10 @@
 module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.createTable('Cart_products', {
-            idCart: {
+            idUser: {
                 allowNull: false,
                 primaryKey: true,
-                references: { model: 'Carts', key: 'idCart' },
+                references: { model: 'Users', key: 'idUser' },
                 type: Sequelize.INTEGER,
             },
             idProduct: {

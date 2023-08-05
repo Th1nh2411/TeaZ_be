@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
             Type.hasMany(models.Recipe, {
                 foreignKey: 'idType',
             });
+            Type.hasMany(models.Recipe_type, {
+                foreignKey: 'idType',
+            });
 
             // define association here
         }

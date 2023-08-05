@@ -357,14 +357,14 @@ const getTotalAndTotalImportAllShop = async (dateRangeArray) => {
                     [Op.ne]: 0,
                 },
             },
-            attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
+            attributes: ['idInvoice', 'date', 'status', 'idUser', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let detail = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],
@@ -410,14 +410,14 @@ const getTotalAndTotalImport = async (dateRangeArray) => {
                     [Op.ne]: 0,
                 },
             },
-            attributes: ['idInvoice', 'date', 'status', 'idCart', 'total'],
+            attributes: ['idInvoice', 'date', 'status', 'idUser', 'total'],
             //order: [['date', 'ASC']],
 
             raw: true,
         });
         let total = 0;
         const promises = invoices.map(async (item) => {
-            let detail = await getInvoiceProduct(item['idCart']);
+            let detail = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
                 idInvoices: item['idInvoice'],

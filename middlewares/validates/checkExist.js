@@ -1,4 +1,4 @@
-const { Account, Product, Cart, Cart_product, Type, Invoice, Shop, Ingredient, Recipe, User } = require('../../models');
+const { Account, Product, Cart_product, Type, Invoice, Shop, Ingredient, Recipe, User } = require('../../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const createProduct = async (idProduct) => {
     let recipeList = idProduct.substring(1);
@@ -22,33 +22,33 @@ const createProduct = async (idProduct) => {
     }
     return createdProducts;
 };
-const takeIngredient = async (idCart) => {
-    let cartProducts = await Cart_product.findAll({
-        where: { idCart },
-        include: [
-            {
-                model: Product,
-                required: false,
-                where: { isMain: 1 },
-                attributes: ['quantity'],
-                include: [
-                    {
-                        model: Recipe,
-                        attributes: ['name', 'image', 'price'],
-                        include: [
-                            {
-                                model: Recipe_shop,
-                                where: { idShop, isActive: 1 },
-                                attributes: ['discount'],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-    });
-    return cartProducts;
-};
+// const takeIngredient = async (idCart) => {
+//     let cartProducts = await Cart_product.findAll({
+//         where: { idCart },
+//         include: [
+//             {
+//                 model: Product,
+//                 required: false,
+//                 where: { isMain: 1 },
+//                 attributes: ['quantity'],
+//                 include: [
+//                     {
+//                         model: Recipe,
+//                         attributes: ['name', 'image', 'price'],
+//                         include: [
+//                             {
+//                                 model: Recipe_shop,
+//                                 where: { idShop, isActive: 1 },
+//                                 attributes: ['discount'],
+//                             },
+//                         ],
+//                     },
+//                 ],
+//             },
+//         ],
+//     });
+//     return cartProducts;
+// };
 const checkExistAccount = () => {
     return async (req, res, next) => {
         try {
@@ -236,28 +236,12 @@ const checkExistProduct = () => {
         }
     };
 };
-const checkExistCurrentCart = () => {
-    return async (req, res, next) => {
-        try {
-            const user = req.user;
 
-            let [currentCart, created] = await Cart.findOrCreate({
-                where: {
-                    idUser: user.idUser,
-                },
-            });
-            req.currentCart = currentCart;
-            next();
-        } catch (error) {
-            return res.status(500).send({ isSuccess: false, isExist: false, message: 'check' });
-        }
-    };
-};
 const checkExistProductCartAndDel = () => {
     return async (req, res, next) => {
         try {
             const { oldIdProduct } = req.params;
-            const currentCart = req.currentCart;
+            const user = req.user;
             if (oldIdProduct == '') {
                 return res.status(400).json({ isSuccess: false });
             }
@@ -265,7 +249,7 @@ const checkExistProductCartAndDel = () => {
             let cartProduct = await Cart_product.findOne({
                 where: {
                     idProduct: oldIdProduct,
-                    idCart: currentCart.idCart,
+                    idUser: user.idUser,
                 },
             });
             if (cartProduct != null) {
@@ -448,7 +432,6 @@ const checkNotExistShopWithLatitudeAndLongitude = () => {
 module.exports = {
     checkExistAccount,
     checkExistProduct,
-    checkExistCurrentCart,
     checkExistProductCartAndDel,
     checkExistInvoiceLessThan3,
     checkExistInvoiceStatus,

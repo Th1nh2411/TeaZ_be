@@ -53,6 +53,8 @@ adminRouter.post('/addIngredient', authenticate, authorize(2), addIngredient);
 adminRouter.patch('/editIngredient/:idIngredient', authenticate, authorize(2), checkExistIngredient(), editIngredient);
 adminRouter.post('/addRecipe', authenticate, authorize(2), addRecipe);
 adminRouter.patch('/editRecipe/:idRecipe', authenticate, authorize(2), editRecipe);
+adminRouter.post('/addRecipeType', authenticate, authorize(2), checkExistTypeAndRecipe(), addRecipeType);
+adminRouter.delete('/deleteRecipeType', authenticate, authorize(2), checkExistTypeAndRecipe(), deleteRecipeType);
 adminRouter.put(
     '/editRecipeIngredient',
     authenticate,

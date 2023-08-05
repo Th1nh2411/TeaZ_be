@@ -22,7 +22,6 @@ const {
 } = require('../controllers/order.controllers');
 const {
     checkExistProduct,
-    checkExistCurrentCart,
     checkExistProductCartAndDel,
     checkExistInvoiceStatus,
     checkExistInvoiceLessThan3,
@@ -32,16 +31,15 @@ const { authenticate } = require('../middlewares/auth/authenticate.js');
 const orderRouter = express.Router();
 
 // Customer
-// orderRouter.get('/topping', getToppingOptions);
+orderRouter.get('/topping', getToppingOptions);
 orderRouter.get('/search', searchRecipe);
-orderRouter.get('/currentCart', authenticate, authorize(0), checkExistCurrentCart(), getCurrentCart);
-orderRouter.post('/addToCart', authenticate, authorize(0), checkExistCurrentCart(), checkExistProduct(), addToCart);
+orderRouter.get('/currentCart', authenticate, authorize(0), getCurrentCart);
+orderRouter.post('/addToCart', authenticate, authorize(0), checkExistProduct(), addToCart);
 orderRouter.post(
     '/editProductCart/:oldIdProduct',
     authenticate,
     authorize(0),
     checkExistProduct(),
-    checkExistCurrentCart(),
     checkExistProductCartAndDel(),
     addToCart,
 );
@@ -49,26 +47,18 @@ orderRouter.delete(
     '/deleteProductCart/:oldIdProduct',
     authenticate,
     authorize(0),
-    checkExistCurrentCart(),
     checkExistProductCartAndDel(),
     confirmDeleteProductCart,
 );
 
-orderRouter.delete('/deleteProductCart', authenticate, authorize(0), checkExistCurrentCart(), delAllItemCart);
+orderRouter.delete('/deleteProductCart', authenticate, authorize(0), delAllItemCart);
 
 orderRouter.get('/getListCompanies', getListCompanies);
 orderRouter.get('/getShipFee', getShipFee);
 orderRouter.get('/getCurrentInvoice', authenticate, authorize(0), getCurrentInvoice);
 orderRouter.get('/getAllInvoice', authenticate, authorize(0), getAllInvoiceUser);
 orderRouter.get('/getDetailInvoice/:idInvoice', authenticate, authorize(0), getDetailInvoice);
-orderRouter.post(
-    '/createInvoice',
-    authenticate,
-    authorize(0),
-    checkExistCurrentCart(),
-    checkExistInvoiceLessThan3(),
-    createInvoice,
-);
+orderRouter.post('/createInvoice', authenticate, authorize(0), checkExistInvoiceLessThan3(), createInvoice);
 
 orderRouter.put('/confirmInvoice', authenticate, authorize(0), checkExistInvoiceStatus(0), confirmInvoice);
 orderRouter.delete('/cancelInvoice', authenticate, authorize(0), cancelInvoice);

@@ -23,7 +23,7 @@ app.use(
 
 //dùng router
 app.use(rootRouter);
-const { Invoice, Cart } = require('./models');
+const { Invoice, Invoice_product } = require('./models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 
 const { changeIngredientByInvoice } = require('./controllers/order.controllers');
@@ -51,28 +51,15 @@ async function deleteUnpaidInvoices() {
         });
 
         for (let invoice of invoices) {
-            let cart = await Cart.findOne({
-                where: { idCart: invoice.idCart },
-            });
-            let currentCart = await Cart.findOne({
-                where: {
-                    idUser: cart.idUser,
-                    isCurrent: 1,
-                },
-            });
-
-            if (!cart) {
-                throw new Error('Cart not found for invoice');
-            }
-            if (!currentCart) {
-                cart.isCurrent = 1;
-                await cart.save();
-            }
-
             if (!invoice) {
                 throw new Error('Invoice not found');
             }
             //console.log(invoice)
+            await Invoice_product.destroy({
+                where: {
+                    idInvoice: invoice.idInvoice, // Sử dụng trường id hoặc trường khác để xác định hóa đơn cần xóa
+                },
+            });
             await Invoice.destroy({
                 where: {
                     idInvoice: invoice.idInvoice, // Sử dụng trường id hoặc trường khác để xác định hóa đơn cần xóa

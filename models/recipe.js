@@ -1,6 +1,5 @@
 'use strict';
 const { Model } = require('sequelize');
-const recipe_ingredient = require('./recipe_ingredient');
 module.exports = (sequelize, DataTypes) => {
     class Recipe extends Model {
         /**
@@ -10,6 +9,9 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             Recipe.hasMany(models.Recipe_ingredient, {
+                foreignKey: 'idRecipe',
+            });
+            Recipe.hasMany(models.Recipe_type, {
                 foreignKey: 'idRecipe',
             });
             Recipe.hasMany(models.Product, {
