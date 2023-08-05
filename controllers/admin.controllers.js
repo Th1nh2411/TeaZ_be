@@ -770,7 +770,7 @@ const editRecipe = async (req, res) => {
         if (price) {
             infoRecipe.price = price;
         }
-        if (isActive == 1 || isActive == 0) {
+        if (isActive !== undefined && isActive !== '') {
             infoRecipe.isActive = isActive;
         }
         if (discount) {

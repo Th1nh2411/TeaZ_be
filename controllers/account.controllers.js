@@ -87,7 +87,7 @@ const login = async (req, res) => {
             });
 
             const token = jwt.sign({ phone: account.phone, mail: account.mail }, 'hehehe', {
-                expiresIn: 30 * 60 * 60 * 60,
+                expiresIn: 7 * 24 * 60 * 60,
             });
             // userInfo.dataValues.phone = phone;
             userInfo.dataValues.role = account.role;
@@ -100,7 +100,7 @@ const login = async (req, res) => {
 
                 token,
 
-                expireTime: 30 * 60 * 60 * 60,
+                expireTime: 7 * 24 * 60 * 60,
             });
         } else {
             return res.status(401).json({ isSuccess: false });
