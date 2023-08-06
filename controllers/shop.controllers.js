@@ -246,18 +246,16 @@ const editInfoShop = async (req, res) => {
         const { isActive, image, address, latitude, longitude } = req.body;
 
         const shop = await Shop.findOne({});
-        if (Number(isActive) == 1 || Number(isActive) == 0) {
-            shop.isActive = Number(isActive) ? Number(isActive) : shop.isActive;
-            shop.image = image ? image : shop.image;
-            shop.address = address ? address : shop.address;
-            shop.latitude = latitude ? latitude : shop.latitude;
-            shop.longitude = longitude ? longitude : shop.longitude;
-            await shop.save();
-        } else return res.status(400).json({ isSuccess: false });
+        shop.isActive = Number(isActive) ? Number(isActive) : shop.isActive;
+        shop.image = image ? image : shop.image;
+        shop.address = address ? address : shop.address;
+        shop.latitude = latitude ? latitude : shop.latitude;
+        shop.longitude = longitude ? longitude : shop.longitude;
+        await shop.save();
 
         return res.status(200).json({ isSuccess: true, shop });
     } catch (error) {
-        res.status(500).json({ error: 'Đã xảy ra lỗi tại editInfo' });
+        res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
 };
 const importIngredient = async (req, res) => {

@@ -177,7 +177,6 @@ const getListStaff = async (req, res) => {
             ],
             raw: true,
         });
-        console.log(listStaffs);
         listStaffs = listStaffs.map((item) => {
             return {
                 idUser: item['idUser'],
@@ -222,6 +221,30 @@ const editStaff = async (req, res) => {
             where: { idAcc: infoStaff.idAcc, role: 1 },
         });
         if (!account) return res.status(409).send({ isSuccess: false, message: 'Tài khoản không tồn tại' });
+
+        const existMail = await Account.findOne({
+            where: {
+                mail: {
+                    [Op.and]: {
+                        [Op.ne]: account.mail,
+                        [Op.eq]: mail,
+                    },
+                },
+            },
+        });
+        const existPhone = await Account.findOne({
+            where: {
+                phone: {
+                    [Op.and]: {
+                        [Op.ne]: account.phone,
+                        [Op.eq]: phone,
+                    },
+                },
+            },
+        });
+        if (existMail) return res.status(409).send({ isSuccess: false, message: 'Mail này đã có tài khoản đăng kí' });
+        if (existPhone)
+            return res.status(409).send({ isSuccess: false, message: 'Số điện thoại này đã có tài khoản đăng kí' });
 
         if (name) {
             infoStaff.name = name;
