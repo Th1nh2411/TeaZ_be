@@ -563,12 +563,15 @@ const getDetailChangeIngredient = async (list, type) => {
         list.forEach((item) => {
             const ingredientId = item.idIngredient;
             const quantity = item.quantity;
+            const info = item.info;
 
             if (ingredientQuantityMap.hasOwnProperty(ingredientId)) {
                 ingredientQuantityMap[ingredientId].quantity += quantity;
+                ingredientQuantityMap[ingredientId].info = info;
             } else {
                 ingredientQuantityMap[ingredientId] = {
                     quantity: quantity,
+                    info: info,
                 };
             }
         });
@@ -581,6 +584,7 @@ const getDetailChangeIngredient = async (list, type) => {
                 });
 
                 ingredient.quantity = ingredientData.quantity;
+                ingredient.info = ingredientData.info;
 
                 ingredientDetailsList.push(ingredient);
 
@@ -598,14 +602,13 @@ const getDetailChangeIngredient = async (list, type) => {
             const ingredientId = item.idIngredient;
             const quantity = item.quantity;
             const price = item.price;
+            const date = item.date;
             if (ingredientQuantityMap.hasOwnProperty(ingredientId)) {
+                ingredientQuantityMap[ingredientId].date = date;
                 ingredientQuantityMap[ingredientId].quantity += quantity;
                 ingredientQuantityMap[ingredientId].total += Number(quantity * price);
             } else {
-                ingredientQuantityMap[ingredientId] = {
-                    quantity: quantity,
-                    total: quantity * price,
-                };
+                ingredientQuantityMap[ingredientId] = { date: date, quantity: quantity, total: quantity * price };
             }
         });
         //console.log(ingredientQuantityMap)
@@ -616,6 +619,7 @@ const getDetailChangeIngredient = async (list, type) => {
                     raw: true,
                 });
 
+                ingredient.date = ingredientData.date;
                 ingredient.quantity = ingredientData.quantity;
                 ingredient.total = ingredientData.total;
                 ingredientDetailsList.push(ingredient);
