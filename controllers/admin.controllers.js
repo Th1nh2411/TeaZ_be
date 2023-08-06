@@ -382,7 +382,7 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
             } else {
                 nameCounts[name] = {
                     count: quantityProduct,
-                    idRecipes: idRecipe,
+                    idRecipe: idRecipe,
                     image: image,
                 };
             }
@@ -400,7 +400,7 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
                 } else {
                     toppingCounts[nameTopping] = {
                         count: quantity,
-                        idRecipes: idItem,
+                        idRecipe: idItem,
                         image: imageTopping,
                     };
                 }
@@ -414,14 +414,14 @@ const getTopSellerByInvoices = (listInvoices, quantity) => {
 
     const topNames = sortedNames.slice(0, quantity).map((name) => ({
         name: name,
-        idRecipes: nameCounts[name].idRecipes,
+        idRecipe: nameCounts[name].idRecipe,
         image: nameCounts[name].image,
         count: nameCounts[name].count,
     }));
 
     const topToppings = sortedToppings.slice(0, quantity).map((name) => ({
         name: name,
-        idRecipes: toppingCounts[name].idRecipes,
+        idRecipe: toppingCounts[name].idRecipe,
         image: toppingCounts[name].image,
         count: toppingCounts[name].count,
     }));
