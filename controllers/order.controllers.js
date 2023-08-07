@@ -110,6 +110,7 @@ const changeIngredientByInvoice = async (invoice, type, date) => {
 
     return infoChange;
 };
+
 const getToppingProduct = async (idProduct) => {
     let listTopping = await Product.findAll({
         where: {
@@ -259,8 +260,8 @@ const getCurrentCartAndTotal = async (idUser) => {
                 include: [
                     {
                         model: Recipe,
-                        where: { isActive: 1 },
-                        attributes: ['name', 'image', 'price', 'discount'],
+                        // where: { isActive: 1 },
+                        attributes: ['name', 'image', 'price', 'discount', 'isActive'],
                     },
                 ],
             },
@@ -282,6 +283,7 @@ const getCurrentCartAndTotal = async (idUser) => {
             quantity: item['quantity'],
             image: item['Product.Recipe.image'],
             price: item['Product.Recipe.price'],
+            isActive: item['Product.Recipe.isActive'],
             discount: item['Product.Recipe.discount'],
             listTopping,
             totalProduct,
@@ -759,7 +761,9 @@ const searchRecipe = async (req, res) => {
 
         let recipes = await Recipe.findAll({
             where: {
+                isActive: 1,
                 name: { [Op.like]: `%${name}%` },
+                idType: { [Op.ne]: 5 },
             },
             attributes: ['idRecipe', 'name', 'image', 'price', 'discount'],
             limit: limit,
@@ -795,5 +799,5 @@ module.exports = {
     getAllInvoiceByDate,
     getInvoiceProduct,
     searchRecipe,
-    changeIngredientByInvoice: changeIngredientByCart,
+    changeIngredientByCart,
 };

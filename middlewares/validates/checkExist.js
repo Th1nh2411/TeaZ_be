@@ -395,6 +395,7 @@ const checkNotExistAccount = () => {
         }
     };
 };
+
 const checkNotExistShopWithLatitudeAndLongitude = () => {
     return async (req, res, next) => {
         try {

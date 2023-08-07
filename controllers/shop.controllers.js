@@ -81,6 +81,7 @@ const changeQuantityIngredientShopWithTransaction = async (ingredient, quantity,
         if (ingredient.quantity < 0) {
             isSuccess = false;
             runOut = true;
+            await setRecipeOffActive(ingredient.idIngredient);
             await t.rollback(); // Hoàn tác các thay đổi và hủy bỏ transaction
         }
 
@@ -181,7 +182,6 @@ const menuByTypeForUser = async (req, res) => {
             listType = req.query.idType.split(',').map(Number);
             menu = await Recipe.findAll({
                 where: {
-                    isActive: 1,
                     idType: { [Op.in]: listType },
                 },
                 // attributes: ['discount'],
@@ -290,6 +290,18 @@ const importIngredient = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi tại importIngredient' });
     }
 };
+const setRecipeOffActive = async (idIngredient) => {
+    const recipeId = await Recipe_ingredient.findAll({
+        where: { idIngredient: idIngredient },
+        raw: true,
+    });
+    await Recipe.update(
+        { isActive: 0 },
+        {
+            where: { idRecipe: { [Op.in]: recipeId.map((item) => item.idRecipe) } },
+        },
+    );
+};
 const exportIngredient = async (req, res) => {
     try {
         const t = await db.sequelize.transaction(); // Bắt đầu transaction
@@ -306,7 +318,6 @@ const exportIngredient = async (req, res) => {
 
         if (Number(quantity) <= 0)
             return res.status(400).json({ isSuccess: false, message: 'Số lượng phải lớn hơn 0' });
-        console.log('test');
         let { isSuccess, infoChange } = await changeQuantityIngredientShopWithTransaction(
             ingredient,
             Number(quantity),
@@ -315,6 +326,7 @@ const exportIngredient = async (req, res) => {
             info,
             t,
         );
+        await setRecipeOffActive(ingredient.idIngredient);
         t.commit();
         if (!isSuccess) return res.status(500).json({ error: 'Đã xảy ra lỗi tại exportIngredient' });
 
