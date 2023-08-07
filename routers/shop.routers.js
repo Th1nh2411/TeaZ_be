@@ -3,8 +3,6 @@ const express = require('express');
 const {
     menuByTypeForUser,
     menuByTypeForStaff,
-    editRecipeShop,
-    getInfoShop,
     editInfoShop,
     detailRecipe,
     getListIngredient,
