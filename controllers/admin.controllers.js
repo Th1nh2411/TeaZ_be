@@ -284,7 +284,7 @@ const editStaff = async (req, res) => {
         });
         if (!infoStaff) return res.status(409).send({ isSuccess: false, message: 'Nhân viên không tồn tại' });
         let account = await Account.findOne({
-            where: { idAcc: infoStaff.idAcc, role: 1 },
+            where: { idAcc: infoStaff.idAcc },
         });
         if (!account) return res.status(409).send({ isSuccess: false, message: 'Tài khoản không tồn tại' });
 
@@ -685,7 +685,7 @@ const addRecipe = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true });
     } catch (error) {
-        res.status(500).json({ error, message: 'addIngredient' });
+        res.status(500).json({ isSuccess: false, message: 'addIngredient' });
     }
 };
 const editRecipe = async (req, res) => {

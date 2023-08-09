@@ -9,6 +9,8 @@ const port = 3007;
 const app = express();
 const cors = require('cors');
 const cron = require('cron');
+const cloudinary = require('cloudinary').v2;
+const Multer = require('multer');
 app.use(cookieParser());
 app.use(cors());
 //cài ứng dụng sử dụng json
@@ -26,16 +28,41 @@ app.use(rootRouter);
 const { Invoice, Invoice_product } = require('./models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 
-const { changeIngredientByInvoice } = require('./controllers/order.controllers');
-
 const job = new cron.CronJob('0 */30 * * * *', async () => {
     // Mã thực hiện xoá các invoice không được thanh toán mỗi 30 phút
     await deleteUnpaidInvoices();
 });
-// const job = new cron.CronJob('*/30 * * * * *', async () => {
-//   // Mã thực hiện xoá các invoice không được thanh toán mỗi 30 giây
-//   await deleteUnpaidInvoices();
-// });
+
+cloudinary.config({
+    cloud_name: 'dgsumh8ih',
+    api_key: '726416339718441',
+    api_secret: 'n9z2-8LwGN8MPhbDadWYuMGN78U',
+});
+async function handleUpload(file) {
+    const res = await cloudinary.uploader.upload(file, {
+        resource_type: 'auto',
+    });
+    return res;
+}
+const storage = new Multer.memoryStorage();
+const upload = Multer({
+    storage,
+});
+app.post('/upload', upload.single('my_file'), async (req, res) => {
+    try {
+        console.log(req.file);
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
+        const cldRes = await handleUpload(dataURI);
+        res.status(200).json({
+            isSuccess: true,
+            url: cldRes.url,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ isSuccess: false, message: error.message });
+    }
+});
 
 async function deleteUnpaidInvoices() {
     try {
