@@ -13,7 +13,7 @@ const authenticate = async (req, res, next) => {
             where: {
                 [Op.or]: [{ phone: data.phone }, { mail: data.mail }],
             },
-            attributes: ['idAcc', 'phone', 'mail', 'role'],
+            // attributes: ['idAcc', 'phone', 'mail', 'role'],
         });
         req.account = account;
 

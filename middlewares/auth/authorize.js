@@ -16,7 +16,7 @@ const authorize = (role) => async (req, res, next) => {
             return res.status(403).json({ message: 'Bạn không có quyền sử dụng chức năng này!' });
         }
     } catch (error) {
-        return res.status(501).json({ error, message: 'autho' });
+        return res.status(501).json({ authorize: false, message: 'authorize' });
     }
 };
 

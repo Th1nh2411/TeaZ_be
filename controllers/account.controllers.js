@@ -109,47 +109,65 @@ const login = async (req, res) => {
         return res.status(500).json({ isSuccess: false });
     }
 };
-
-const changePassword = async (req, res) => {
-    const { oldPassword, newPassword, repeatPassword } = req.body;
-    console.log('test');
-    console.log(req.mail);
+const refreshToken = async (req, res) => {
     try {
-        const accountUpdate = await Account.findOne({
+        const account = req.account;
+        let userInfo;
+        userInfo = await User.findOne({
             where: {
-                mail: req.mail,
+                idAcc: account.idAcc,
             },
         });
+
+        const token = jwt.sign({ phone: account.phone, mail: account.mail }, 'hehehe', {
+            expiresIn: 7 * 24 * 60 * 60,
+        });
+        // userInfo.dataValues.phone = phone;
+        userInfo.dataValues.role = account.role;
+        userInfo.dataValues.phone = account.phone;
+        userInfo.dataValues.mail = account.mail;
+
+        res.status(200).json({
+            userInfo,
+            isSuccess: true,
+            token,
+            expireTime: 7 * 24 * 60 * 60,
+        });
+    } catch (error) {
+        return res.status(500).json({ isSuccess: false });
+    }
+};
+const changePassword = async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    try {
+        const accountUpdate = req.account;
         const isAuth = bcrypt.compareSync(oldPassword, accountUpdate.password);
         if (isAuth) {
-            if (newPassword == repeatPassword) {
-                if (newPassword == oldPassword) {
-                    res.status(400).json({
-                        status: true,
-                    });
-                } else {
-                    //tạo ra một chuỗi ngẫu nhiên
-                    const salt = bcrypt.genSaltSync(10);
-                    //mã hoá salt + password
-                    const hashPassword = bcrypt.hashSync(newPassword, salt);
-
-                    accountUpdate.password = hashPassword;
-                    await accountUpdate.save();
-                    res.status(200).json({
-                        status: true,
-                        isSuccess: true,
-                    });
-                }
-            } else {
+            if (newPassword == oldPassword) {
                 res.status(400).json({
                     status: true,
+                    message: 'Mật khẩu mới trùng với mật khẩu cũ',
                     isSuccess: false,
+                });
+            } else {
+                //tạo ra một chuỗi ngẫu nhiên
+                const salt = bcrypt.genSaltSync(10);
+                //mã hoá salt + password
+                const hashPassword = bcrypt.hashSync(newPassword, salt);
+
+                accountUpdate.password = hashPassword;
+                await accountUpdate.save();
+                res.status(200).json({
+                    status: true,
+                    isSuccess: true,
+                    message: 'Đổi mật khẩu thành công',
                 });
             }
         } else {
             res.status(400).json({
                 status: false,
                 isSuccess: false,
+                message: 'Mật khẩu cũ không đúng',
             });
         }
     } catch (error) {
@@ -281,6 +299,7 @@ const accessForgotPassword = async (req, res, next) => {
 module.exports = {
     // getDetailTaiKhoan,
     login,
+    refreshToken,
     logout,
     createAccountForCustomer,
     changePassword,

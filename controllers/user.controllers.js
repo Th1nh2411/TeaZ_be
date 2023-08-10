@@ -13,19 +13,32 @@ const getUserInfo = async (req, res) => {
 };
 const editUserInfo = async (req, res) => {
     try {
-        const { name, mail, phone, password } = req.body;
+        const { name, mail, phone } = req.body;
         const user = req.user;
         const account = req.account;
-        const accountUpdate = await Account.findOne({
+        const existMail = await Account.findOne({
             where: {
-                [Op.or]: [{ phone: phone ? phone : '' }, { mail: mail ? mail : '' }],
+                mail: {
+                    [Op.and]: {
+                        [Op.ne]: account.mail,
+                        [Op.eq]: mail,
+                    },
+                },
             },
         });
-
-        //console.log(created)
-        if (accountUpdate) {
-            return res.status(409).send({ isSuccess: false, message: 'Tài khoản đã tồn tại' });
-        }
+        const existPhone = await Account.findOne({
+            where: {
+                phone: {
+                    [Op.and]: {
+                        [Op.ne]: account.phone,
+                        [Op.eq]: phone,
+                    },
+                },
+            },
+        });
+        if (existMail) return res.status(409).send({ isSuccess: false, message: 'Mail này đã có tài khoản đăng kí' });
+        if (existPhone)
+            return res.status(409).send({ isSuccess: false, message: 'Số điện thoại này đã có tài khoản đăng kí' });
         if (name) {
             user.name = name;
         }
@@ -33,11 +46,7 @@ const editUserInfo = async (req, res) => {
         if (phone) {
             account.phone = phone;
         }
-        if (password) {
-            const salt = bcrypt.genSaltSync(10);
-            const hashPassword = bcrypt.hashSync(password, salt);
-            account.password = hashPassword;
-        }
+
         if (mail) {
             account.mail = mail;
         }
