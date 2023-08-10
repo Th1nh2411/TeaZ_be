@@ -9,6 +9,7 @@ const {
     Recipe_ingredient,
     Invoice_product,
     Ingredient,
+    Shop,
 } = require('../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const { getIngredientByIdRecipe, changeQuantityIngredientShopWithTransaction } = require('./shop.controllers');
@@ -458,11 +459,10 @@ const confirmInvoice = async (req, res) => {
 const getCurrentCart = async (req, res) => {
     try {
         const user = req.user;
-
+        const shop = await Shop.findOne({ raw: true });
         let { products, total } = await getCurrentCartAndTotal(user.idUser);
-        //console.log(listTopping)
 
-        return res.status(200).json({ isSuccess: true, products, total });
+        return res.status(200).json({ isSuccess: true, products, total, shopStatus: shop.isActive });
     } catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }

@@ -246,11 +246,12 @@ const editInfoShop = async (req, res) => {
         const { isActive, image, address, latitude, longitude } = req.body;
 
         const shop = await Shop.findOne({});
-        shop.isActive = Number(isActive) ? Number(isActive) : shop.isActive;
+        shop.isActive = Number(isActive) !== undefined ? Number(isActive) : shop.isActive;
         shop.image = image ? image : shop.image;
         shop.address = address ? address : shop.address;
         shop.latitude = latitude ? latitude : shop.latitude;
         shop.longitude = longitude ? longitude : shop.longitude;
+        console.log(Number(isActive));
         await shop.save();
 
         return res.status(200).json({ isSuccess: true, shop });
