@@ -829,6 +829,7 @@ const getIngredientByIdRecipeAdmin = async (idRecipe) => {
             name: item['Ingredient.name'],
             image: item['Ingredient.image'],
             quantity: item['quantity'],
+            remainQuantity: item['Ingredient.quantity'],
             unitName: item['Ingredient.unitName'],
         };
     });

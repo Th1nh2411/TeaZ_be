@@ -70,8 +70,6 @@ const createAccountForCustomer = async (req, res) => {
 };
 //tam thoi chua co
 
-const loginAdmin = async (req, res) => {};
-
 const login = async (req, res) => {
     try {
         const { phone, password } = req.body;
@@ -304,7 +302,6 @@ module.exports = {
     createAccountForCustomer,
     changePassword,
     forgotPassword,
-    loginAdmin,
     verify,
     accessForgotPassword,
 };
