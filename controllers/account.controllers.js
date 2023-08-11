@@ -182,7 +182,7 @@ const logout = async (req, res, next) => {
     res.status(200).json({ isSuccess: true });
 };
 
-const forgotPassword = async (req, res) => {
+const sendOTPGmail = async (req, res) => {
     const account = req.account;
     try {
         const randomID = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000);
@@ -213,7 +213,6 @@ const forgotPassword = async (req, res) => {
                     pass: 'oqrkvehhclgnbzjf', // generated ethereal password
                 },
             });
-            console.log(3);
             // send mail with defined transport object
             await transporter.sendMail({
                 from: 'n19dccn196@student.ptithcm.edu.vn', // sender address
@@ -301,7 +300,7 @@ module.exports = {
     logout,
     createAccountForCustomer,
     changePassword,
-    forgotPassword,
+    sendOTPGmail,
     verify,
     accessForgotPassword,
 };
