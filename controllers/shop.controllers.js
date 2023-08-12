@@ -246,7 +246,7 @@ const editInfoShop = async (req, res) => {
         const { isActive, image, address, latitude, longitude } = req.body;
 
         const shop = await Shop.findOne({});
-        shop.isActive = Number(isActive) !== undefined ? Number(isActive) : shop.isActive;
+        shop.isActive = isActive !== undefined ? isActive : shop.isActive;
         shop.image = image ? image : shop.image;
         shop.address = address ? address : shop.address;
         shop.latitude = latitude ? latitude : shop.latitude;

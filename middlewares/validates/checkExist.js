@@ -202,8 +202,8 @@ const checkExistProduct = () => {
                 return res.status(400).json({ isSuccess: false });
             }
             //console.log('test')
-            const listIdRecipe = idRecipe.split(',').map(Number);
-            listIdRecipe.sort((a, b) => a - b);
+            let listIdRecipe = idRecipe.split(',').map(Number);
+            listIdRecipe = [listIdRecipe[0], ...listIdRecipe.slice(1).sort((a, b) => a - b)];
             let idProduct = '';
             if (sizeProduct != 0) {
                 idProduct += 'L';
