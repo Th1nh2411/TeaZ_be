@@ -100,7 +100,7 @@ const getReportByDate = async (req, res) => {
             let products = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
-                idInvoices: item['idInvoice'],
+                idInvoice: item['idInvoice'],
                 date: item['date'],
                 products,
             };
@@ -404,7 +404,7 @@ const getTotalAndTotalImport = async (dateRangeArray) => {
             let products = await getInvoiceProduct(item['idInvoice']);
             total += item['total'];
             return {
-                idInvoices: item['idInvoice'],
+                idInvoice: item['idInvoice'],
                 date: item['date'],
                 products,
             };

@@ -653,7 +653,7 @@ const getAllOrderInTransit = async (req, res) => {
             let products = await getInvoiceProduct(item['idInvoice']);
             //console.log(cart)
             return {
-                idInvoices: item['idInvoice'],
+                idInvoice: item['idInvoice'],
                 date: item['date'],
 
                 products,
@@ -699,7 +699,7 @@ const getAllInvoiceByDate = async (req, res) => {
             let products = await getInvoiceProduct(item['idInvoice']);
             //console.log(cart)
             return {
-                idInvoices: item['idInvoice'],
+                idInvoice: item['idInvoice'],
                 total: item['total'],
                 date: item['date'],
 
@@ -733,7 +733,7 @@ const getAllOrder = async (req, res) => {
             let products = await getInvoiceProduct(item['idInvoice']);
             //console.log(cart)
             return {
-                idInvoices: item['idInvoice'],
+                idInvoice: item['idInvoice'],
                 date: item['date'],
                 total: item['total'],
                 shippingFee: item['shippingFee'],
