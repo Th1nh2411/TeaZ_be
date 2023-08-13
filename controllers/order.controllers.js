@@ -723,7 +723,7 @@ const getAllOrder = async (req, res) => {
             where: {
                 status: 1,
             },
-            attributes: ['idInvoice', 'date', 'idUser'],
+            attributes: ['idInvoice', 'date', 'idUser', 'total', 'shippingFee'],
             order: [['date', 'ASC']],
 
             raw: true,
@@ -735,6 +735,8 @@ const getAllOrder = async (req, res) => {
             return {
                 idInvoices: item['idInvoice'],
                 date: item['date'],
+                total: item['total'],
+                shippingFee: item['shippingFee'],
                 products,
             };
         });
