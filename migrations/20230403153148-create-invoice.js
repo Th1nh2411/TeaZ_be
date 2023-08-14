@@ -39,6 +39,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.INTEGER,
             },
+            payment_status: {
+                allowNull: false,
+                type: Sequelize.INTEGER,
+            },
         });
     },
     async down(queryInterface, Sequelize) {

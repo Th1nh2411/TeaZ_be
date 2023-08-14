@@ -46,6 +46,10 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 type: DataTypes.INTEGER,
             },
+            payment_status: {
+                allowNull: false,
+                type: DataTypes.INTEGER,
+            },
         },
         {
             sequelize,

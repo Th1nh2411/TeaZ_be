@@ -577,11 +577,16 @@ const getAllInvoiceUser = async (req, res) => {
 const createInvoice = async (req, res) => {
     try {
         let isSuccess;
-        const { idShipping_company, shippingFee, address } = req.body;
-        if (idShipping_company === undefined || shippingFee === undefined) {
+        const { idShipping_company, shippingFee, address, payment_status } = req.body;
+        if (
+            idShipping_company === undefined ||
+            shippingFee === undefined ||
+            address === undefined ||
+            payment_status === undefined
+        ) {
             return res.status(400).json({ isSuccess: false });
         }
-        if (idShipping_company === '' || shippingFee === '') {
+        if (idShipping_company === '' || shippingFee === '' || address === '' || payment_status === '') {
             return res.status(400).json({ isSuccess: false });
         }
         //console.log(idShipping_company)
@@ -613,6 +618,7 @@ const createInvoice = async (req, res) => {
                     total,
                     date,
                     status: 0,
+                    payment_status,
                 },
                 { transaction: t },
             );
@@ -658,7 +664,7 @@ const getAllOrderInTransit = async (req, res) => {
             where: {
                 status: 2,
             },
-            attributes: ['idInvoice', 'date', 'idUser'],
+            attributes: ['idInvoice', 'date', 'idUser', 'total', 'shippingFee', 'payment_status'],
             order: [['date', 'ASC']],
 
             raw: true,
@@ -670,7 +676,9 @@ const getAllOrderInTransit = async (req, res) => {
             return {
                 idInvoice: item['idInvoice'],
                 date: item['date'],
-
+                total: item['total'],
+                payment_status: item['payment_status'],
+                shippingFee: item['shippingFee'],
                 products,
             };
         });
@@ -738,7 +746,7 @@ const getAllOrder = async (req, res) => {
             where: {
                 status: 1,
             },
-            attributes: ['idInvoice', 'date', 'idUser', 'total', 'shippingFee'],
+            attributes: ['idInvoice', 'date', 'idUser', 'total', 'shippingFee', 'payment_status'],
             order: [['date', 'ASC']],
 
             raw: true,
@@ -751,6 +759,7 @@ const getAllOrder = async (req, res) => {
                 idInvoice: item['idInvoice'],
                 date: item['date'],
                 total: item['total'],
+                payment_status: item['payment_status'],
                 shippingFee: item['shippingFee'],
                 products,
             };
