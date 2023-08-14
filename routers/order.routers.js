@@ -22,6 +22,7 @@ const {
     searchRecipe,
     create_payment_url,
     refund,
+    cancelInvoiceById,
 } = require('../controllers/order.controllers');
 const {
     checkExistProduct,
@@ -67,6 +68,7 @@ orderRouter.put('/confirmInvoice', authenticate, authorize(0), checkExistInvoice
 orderRouter.delete('/cancelInvoice', authenticate, authorize(0), cancelInvoice);
 // Manage
 orderRouter.get('/getAllOrder', authenticate, authorize(1), getAllOrder);
+orderRouter.delete('/cancelInvoiceById/:idInvoice', authenticate, authorize(0), cancelInvoiceById);
 orderRouter.get('/getAllOrderInTransit', authenticate, authorize(1), getAllOrderInTransit);
 orderRouter.put('/completeOrder', authenticate, authorize(1), checkExistInvoiceStatus(1), changeStatusInvoice);
 orderRouter.put('/completeInvoice', authenticate, authorize(1), checkExistInvoiceStatus(2), changeStatusInvoice);

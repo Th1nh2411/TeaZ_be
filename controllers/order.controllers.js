@@ -533,6 +533,31 @@ const cancelInvoice = async (req, res) => {
         res.status(500).json({ error: 'Đã xảy ra lỗi' });
     }
 };
+const cancelInvoiceById = async (req, res) => {
+    try {
+        const user = req.user;
+        const { idInvoice } = req.params;
+
+        const invoice = await Invoice.findOne({
+            where: { idInvoice },
+        });
+        if (invoice.status < 2) {
+            const date = moment().format('YYYY-MM-DD HH:mm:ss');
+            let infoChange = await changeIngredientByInvoice(invoice, 1, date);
+            await Invoice_product.destroy({
+                where: { idInvoice: invoice.idInvoice },
+            });
+            await invoice.destroy();
+            return res.status(200).json({ isSuccess: true, isCancel: true, message: 'Đã huỷ thành công hoá đơn' });
+        } else {
+            return res
+                .status(200)
+                .json({ isSuccess: true, isCancel: false, message: 'Đơn đang được giao. Không thể huỷ hoá đơn' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Đã xảy ra lỗi' });
+    }
+};
 const getCurrentInvoice = async (req, res) => {
     try {
         const user = req.user;
@@ -900,4 +925,5 @@ module.exports = {
     searchRecipe,
     changeIngredientByCart,
     create_payment_url,
+    cancelInvoiceById,
 };
