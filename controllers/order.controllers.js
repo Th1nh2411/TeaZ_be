@@ -555,6 +555,7 @@ const getAllInvoiceUser = async (req, res) => {
 
         const invoices = await Invoice.findAll({
             where: { idUser: user.idUser },
+            order: [['date', 'DESC']],
         });
 
         return res.status(200).json({ isSuccess: true, invoices });
