@@ -10,6 +10,7 @@ const {
     Invoice_product,
     Ingredient,
     Shop,
+    User,
 } = require('../models');
 const { QueryTypes, Op, where, STRING } = require('sequelize');
 const { getIngredientByIdRecipe, changeQuantityIngredientShopWithTransaction } = require('./shop.controllers');
@@ -538,11 +539,21 @@ const getCurrentInvoice = async (req, res) => {
         const invoice = await Invoice.findOne({
             where: { status: { [Op.lt]: 3 } },
             idUser: user.idUser,
+            include: [
+                {
+                    model: User,
+                    attributes: ['address'],
+                },
+            ],
+            raw: true,
         });
         if (invoice == null) {
             return res.status(200).json({ isSuccess: true, invoice });
         }
         let products = await getInvoiceProduct(invoice.idInvoice);
+        invoice.address = invoice['User.address'];
+
+        delete invoice['User.address'];
 
         return res.status(200).json({ isSuccess: true, invoice, products });
     } catch (error) {
@@ -566,7 +577,7 @@ const getAllInvoiceUser = async (req, res) => {
 const createInvoice = async (req, res) => {
     try {
         let isSuccess;
-        const { idShipping_company, shippingFee } = req.body;
+        const { idShipping_company, shippingFee, address } = req.body;
         if (idShipping_company === undefined || shippingFee === undefined) {
             return res.status(400).json({ isSuccess: false });
         }
@@ -580,6 +591,7 @@ const createInvoice = async (req, res) => {
                 idUser: user.idUser,
             },
         });
+
         if (!cartProduct) {
             return res.status(400).json({ isSuccess: false, hasProduct: false });
         }
@@ -588,9 +600,11 @@ const createInvoice = async (req, res) => {
         let invoice;
 
         const t = await db.sequelize.transaction(); // Bắt đầu transaction\
+
         try {
             const date = moment().format('YYYY-MM-DD HH:mm:ss');
-
+            user.address = address;
+            await user.save({ transaction: t });
             invoice = await Invoice.create(
                 {
                     idUser: user.idUser,

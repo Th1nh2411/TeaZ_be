@@ -16,6 +16,9 @@ module.exports = {
                 type: Sequelize.STRING(45),
                 allowNull: false,
             },
+            address: {
+                type: Sequelize.STRING(255),
+            },
 
             idAcc: {
                 allowNull: false,
