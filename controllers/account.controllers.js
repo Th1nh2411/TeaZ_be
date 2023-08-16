@@ -219,7 +219,7 @@ const sendOTPGmail = async (req, res) => {
                 to: `${account.mail}`, // list of receivers
                 subject: 'FORGOT PASSWORD', // Subject line
                 text: 'FORGOT PASSWORD', // plain text body
-                html: `<p>Mã xác nhận của bạn là: ${randomID}</p>`, // html body
+                html: `<div style="font-size:18px;">Mã xác nhận OTP của bạn là: <span style="font-weight:700;">${randomID}</span></div>`, // html body
             });
 
             return res.status(200).json({
