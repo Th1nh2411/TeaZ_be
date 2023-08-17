@@ -8,16 +8,22 @@
     },
     "test": {
         "username": "root",
-        "password": null,
-        "database": "database_test",
-        "host": "0.0.0.0",
+        "password": "root",
+        "database": "plmt",
+        "host": "localhost",
         "dialect": "mysql"
     },
     "production": {
         "username": "root",
-        "password": null,
-        "database": "database_production",
-        "host": "0.0.0.0",
+        "password": "root",
+        "database": "plmt",
+        "host": "localhost",
         "dialect": "mysql"
-    }
+    },
+    "PORT": 3007,
+    "DB_HOST": "localhost",
+    "DB_USERNAME": "root",
+    "DB_PASSWORD": "root",
+    "DB_NAME": "plmt",
+    "DB_PORT": "3306"
 }
