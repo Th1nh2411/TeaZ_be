@@ -562,8 +562,7 @@ const getCurrentInvoice = async (req, res) => {
     try {
         const user = req.user;
         const invoice = await Invoice.findOne({
-            where: { status: { [Op.lt]: 3 } },
-            idUser: user.idUser,
+            where: { status: { [Op.lt]: 3 }, idUser: user.idUser },
             include: [
                 {
                     model: User,
